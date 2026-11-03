@@ -31,4 +31,15 @@ Ein Wassermelder für Keller, Waschmaschine oder Heizungsraum. Ein Feuchtesensor
 | GND | GND |
 | DO | GPIO 5 |
 
+## Anderes Board
+
+Die Pins oben gelten für den Heltec V3. Auf anderem Board:
+
+1. Ein Target mit `examples/simple_sensor` verwenden. Eines gibt es für viele Boards schon, z. B. `RAK_4631_sensor`, sonst im Varianten-`platformio.ini` eines anlegen.
+2. Freie GPIOs mit 3,3 V Logik wählen und per Build-Flag setzen: `LEAK_PIN`, `LEAK_WET_LEVEL` (`LOW` oder `HIGH`). Beispiel: `-D LEAK_PIN=17 -D LEAK_WET_LEVEL=HIGH`
+3. Pegel und Versorgung prüfen, die meisten Boards vertragen 3,3 V, nicht 5 V.
+4. Den Aufbau mit dem Test aus der [Anleitung](anleitung.md) prüfen.
+
+Kompiliert wurde mit den Heltec-Defaults für `Heltec_v3_sensor` sowie mit überschriebenen Pins für `RAK_4631_sensor` und `Xiao_nrf52_sensor`. Xiao nRF52840: Target aus [`targets/xiao_nrf52_sensor.ini`](../../targets/xiao_nrf52_sensor.ini) anlegen, Pins: `-D LEAK_PIN=D0`. Funktioniert hat es auf keinem Board in echt.
+
 Allgemeine Hinweise zu Sensor-Nodes und Airtime stehen im [Haupt-README](../../README.md).

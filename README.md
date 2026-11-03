@@ -17,6 +17,79 @@ Jedes Beispiel hat eine eigene Stückliste (`BOM.md`). Verwandte Projekte aus de
 
 Weitere Beispiele sind willkommen, siehe [Mitmachen](#mitmachen).
 
+## Getting Started (Schritt für Schritt)
+
+Für alle, die noch nie eine Firmware gebaut haben. Ihr braucht einen PC (Windows, macOS oder Linux), ein USB-Datenkabel und etwa eine Stunde, davon dauert der erste Build 5 bis 15 Minuten.
+
+### 1. Hardware besorgen
+
+Pro Beispiel gibt es eine Stückliste (`examples/<name>/BOM.md`). Zum Einstieg reichen ein **Heltec WiFi LoRa 32 V3 (868 MHz)** mit Antenne und die Bauteile des Beispiels. **Nie ohne Antenne senden**, das kann das Funkmodul beschädigen.
+
+### 2. Software installieren
+
+1. [Visual Studio Code](https://code.visualstudio.com/) installieren.
+2. In VS Code links auf Erweiterungen klicken (Würfel-Symbol), **PlatformIO IDE** suchen und installieren. Danach VS Code neu starten. Beim ersten Start lädt PlatformIO einige Minuten lang Werkzeuge nach.
+3. [Git](https://git-scm.com/downloads) installieren.
+
+### 3. Code holen
+
+In einem Terminal (unter Windows „Git Bash“ oder PowerShell) in einen Ordner eurer Wahl wechseln und ausführen:
+
+```bash
+git clone https://github.com/meshcore-dev/MeshCore.git
+git clone https://github.com/achildrenmile/carinthiamesh-sensor-nodes.git
+```
+
+Ihr habt jetzt zwei Ordner nebeneinander: `MeshCore` (die Firmware) und `carinthiamesh-sensor-nodes` (diese Beispiele).
+
+### 4. Beispiel einspielen
+
+Das Beispiel ersetzt eine Datei der MeshCore-Vorlage. Hier am Beispiel `door-sensor`:
+
+```bash
+cd MeshCore
+cp ../carinthiamesh-sensor-nodes/examples/door-sensor/firmware/main.cpp examples/simple_sensor/main.cpp
+```
+
+Unter Windows (PowerShell) statt `cp`: `copy ..\carinthiamesh-sensor-nodes\examples\door-sensor\firmware\main.cpp examples\simple_sensor\main.cpp`
+
+### 5. Name und Passwort setzen
+
+Öffnet in VS Code den Ordner `MeshCore` (Datei → Ordner öffnen) und dann `variants/heltec_v3/platformio.ini`. Sucht den Abschnitt `[env:Heltec_v3_sensor]` und ändert:
+
+- `ADVERT_NAME`: der Name, unter dem euer Sensor im Mesh erscheint, zum Beispiel `"Keller Tuer"`
+- `ADMIN_PASSWORD`: **euer eigenes Passwort**. Mit dem melden sich Companions am Sensor an. Das Standardpasswort `password` kennt jeder.
+
+### 6. Board anschließen und flashen
+
+1. Heltec per USB mit dem PC verbinden (Datenkabel, nicht nur Ladekabel).
+2. In VS Code unten in der blauen Leiste auf das Ameisen-Symbol (PlatformIO) klicken, dann **Project Tasks → Heltec_v3_sensor → Upload**. Oder im Terminal im Ordner `MeshCore`: `pio run -e Heltec_v3_sensor -t upload`
+3. Warten, bis „SUCCESS“ erscheint. Der erste Durchlauf lädt viel nach und dauert am längsten.
+
+Findet PlatformIO das Board nicht: anderes USB-Kabel oder anderen Port probieren. Unter Linux fehlt manchmal die Berechtigung, dann den eigenen Benutzer zur Gruppe `dialout` hinzufügen. Hilft das nicht, am Heltec die PRG-Taste gedrückt halten, kurz RST drücken und erst dann PRG loslassen. Danach den Upload wiederholen.
+
+### 7. Am Sensor anmelden
+
+1. In der MeshCore-Companion-App (Android, iOS oder Web) euren Companion-Node verbinden.
+2. Der Sensor sendet beim Start eine Advert. Wartet kurz, bis er in der Kontaktliste auftaucht.
+3. Auf den Sensor tippen und mit dem Admin-Passwort aus Schritt 5 anmelden. Ab jetzt bekommt ihr dessen Alerts als Direktnachricht.
+
+### 8. Testen
+
+Jedes Beispiel hat in seiner `anleitung.md` einen Testabschnitt. Beim `door-sensor`: Magnet vom Kontakt wegnehmen, in der App erscheint „Tuer offen“. Kommt nichts an, den Sensor per USB anschließen und den seriellen Monitor in PlatformIO öffnen (Stecker-Symbol, 115200 Baud), dort stehen Fehlermeldungen.
+
+### Anderes Board?
+
+Die Beispiele sind für den Heltec V3 voreingestellt, laufen aber auch auf anderen Boards, wenn die Pins per Build-Flag angepasst werden. Geprüft sind die Builds für:
+
+| Board | Target | Hinweis |
+| --- | --- | --- |
+| Heltec WiFi LoRa 32 V3 | `Heltec_v3_sensor` | Standard, Pins aus den READMEs |
+| RAK4631 (WisBlock) | `RAK_4631_sensor` | Pins per `-D …=WB_IO1` usw. |
+| Seeed XIAO nRF52840 + Wio-SX1262 | `Xiao_nrf52_sensor` | Target selbst anlegen: [`targets/xiao_nrf52_sensor.ini`](targets/xiao_nrf52_sensor.ini) |
+
+Alle drei wurden **nur kompiliert**, nicht an echter Hardware getestet.
+
 ## Wie Sensor-Nodes bei MeshCore funktionieren
 
 Alle Beispiele bauen auf der offiziellen Vorlage [`examples/simple_sensor`](https://github.com/meshcore-dev/MeshCore/tree/main/examples/simple_sensor) auf. Eine Einführung gibt der [MeshCore-Blog: Sensor Node Intro](https://blog.meshcore.io/2026/09/14/sensor-intro).

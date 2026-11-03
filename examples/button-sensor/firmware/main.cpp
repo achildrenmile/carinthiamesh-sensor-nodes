@@ -6,9 +6,26 @@
 #endif
 
 // ===== Taster, LED, Buzzer =====
-static const uint8_t BTN_PINS[4] = { 4, 5, 6, 7 };   // Taster gegen GND
-#define LED_PIN        41
-#define BUZZER_PIN     42
+// Pins per Build-Flag aenderbar, z. B. -D BTN1_PIN=17 (Default: Heltec V3)
+#ifndef BTN1_PIN
+  #define BTN1_PIN     4
+#endif
+#ifndef BTN2_PIN
+  #define BTN2_PIN     5
+#endif
+#ifndef BTN3_PIN
+  #define BTN3_PIN     6
+#endif
+#ifndef BTN4_PIN
+  #define BTN4_PIN     7
+#endif
+#ifndef LED_PIN
+  #define LED_PIN      41
+#endif
+#ifndef BUZZER_PIN
+  #define BUZZER_PIN   42
+#endif
+static const uint8_t BTN_PINS[4] = { BTN1_PIN, BTN2_PIN, BTN3_PIN, BTN4_PIN };   // Taster gegen GND
 #define DEBOUNCE_MS    50          // Entprellen
 #define COOLDOWN_MS    30000UL     // max. 1 Meldung pro Taster alle 30 s
 #define MAX_PER_HOUR   20          // Notbremse: max. 20 Meldungen pro Stunde

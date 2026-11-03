@@ -6,8 +6,13 @@
 #endif
 
 // ===== Wassermelder =====
-#define LEAK_PIN        5          // Digital-Ausgang (DO) des Sensor-Moduls
-#define LEAK_WET_LEVEL  LOW        // Pegel bei Nässe; je nach Modul LOW oder HIGH, siehe Anleitung
+// Pin und Pegel per Build-Flag aenderbar, z. B. -D LEAK_PIN=17 -D LEAK_WET_LEVEL=HIGH (Default: Heltec V3)
+#ifndef LEAK_PIN
+  #define LEAK_PIN        5        // Digital-Ausgang (DO) des Sensor-Moduls
+#endif
+#ifndef LEAK_WET_LEVEL
+  #define LEAK_WET_LEVEL  LOW      // Pegel bei Nässe; je nach Modul LOW oder HIGH, siehe Anleitung
+#endif
 #define DEBOUNCE_MS     2000       // Wasser muss 2 s anliegen
 #define REARM_MS        600000UL   // nach einer Meldung 10 min Ruhe
 #define MAX_PER_HOUR    6          // Notbremse: max. 6 Meldungen pro Stunde

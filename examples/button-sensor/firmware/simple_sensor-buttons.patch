@@ -1,15 +1,32 @@
-diff --git a/examples/simple_sensor/main.cpp b/examples/simple_sensor/main.cpp
-index 66991da..42d44db 100644
---- a/examples/simple_sensor/main.cpp
-+++ b/examples/simple_sensor/main.cpp
-@@ -5,6 +5,15 @@
+diff --git i/examples/simple_sensor/main.cpp w/examples/simple_sensor/main.cpp
+index 66991da..e23c825 100644
+--- i/examples/simple_sensor/main.cpp
++++ w/examples/simple_sensor/main.cpp
+@@ -5,6 +5,32 @@
    static UITask ui_task(display);
  #endif
  
 +// ===== Taster, LED, Buzzer =====
-+static const uint8_t BTN_PINS[4] = { 4, 5, 6, 7 };   // Taster gegen GND
-+#define LED_PIN        41
-+#define BUZZER_PIN     42
++// Pins per Build-Flag aenderbar, z. B. -D BTN1_PIN=17 (Default: Heltec V3)
++#ifndef BTN1_PIN
++  #define BTN1_PIN     4
++#endif
++#ifndef BTN2_PIN
++  #define BTN2_PIN     5
++#endif
++#ifndef BTN3_PIN
++  #define BTN3_PIN     6
++#endif
++#ifndef BTN4_PIN
++  #define BTN4_PIN     7
++#endif
++#ifndef LED_PIN
++  #define LED_PIN      41
++#endif
++#ifndef BUZZER_PIN
++  #define BUZZER_PIN   42
++#endif
++static const uint8_t BTN_PINS[4] = { BTN1_PIN, BTN2_PIN, BTN3_PIN, BTN4_PIN };   // Taster gegen GND
 +#define DEBOUNCE_MS    50          // Entprellen
 +#define COOLDOWN_MS    30000UL     // max. 1 Meldung pro Taster alle 30 s
 +#define MAX_PER_HOUR   20          // Notbremse: max. 20 Meldungen pro Stunde
@@ -18,7 +35,7 @@ index 66991da..42d44db 100644
  class MyMesh : public SensorMesh {
  public:
    MyMesh(mesh::MainBoard& board, mesh::Radio& radio, mesh::MillisecondClock& ms, mesh::RNG& rng, mesh::RTCClock& rtc, mesh::MeshTables& tables)
-@@ -13,8 +22,55 @@ public:
+@@ -13,8 +39,55 @@ public:
    {
    }
  
@@ -74,7 +91,7 @@ index 66991da..42d44db 100644
    Trigger low_batt, critical_batt;
    TimeSeriesData  battery_data;
  
-@@ -22,8 +78,9 @@ protected:
+@@ -22,8 +95,9 @@ protected:
      float batt_voltage = getVoltage(TELEM_CHANNEL_SELF);
  
      battery_data.recordData(getRTCClock(), batt_voltage);   // record battery
@@ -86,7 +103,7 @@ index 66991da..42d44db 100644
    }
  
    int querySeriesData(uint32_t start_secs_ago, uint32_t end_secs_ago, MinMaxAvg dest[], int max_num) override {
-@@ -32,9 +89,14 @@ protected:
+@@ -32,9 +106,14 @@ protected:
    }
  
    bool handleCustomCommand(uint32_t sender_timestamp, char* command, char* reply) override {
@@ -104,7 +121,7 @@ index 66991da..42d44db 100644
      }
      return false;  // not handled
    }
-@@ -109,6 +171,7 @@ void setup() {
+@@ -109,6 +188,7 @@ void setup() {
    sensors.begin();
  
    the_mesh.begin(fs);
@@ -112,7 +129,7 @@ index 66991da..42d44db 100644
  
  #ifdef DISPLAY_CLASS
    ui_task.begin(the_mesh.getNodePrefs(), FIRMWARE_BUILD_DATE, FIRMWARE_VERSION);
-@@ -156,6 +219,7 @@ void loop() {
+@@ -156,6 +236,7 @@ void loop() {
    board.loop();   // let the board feed its watchdog, run periodic housekeeping
  
    the_mesh.loop();

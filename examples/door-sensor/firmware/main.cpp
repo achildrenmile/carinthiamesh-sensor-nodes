@@ -6,7 +6,10 @@
 #endif
 
 // ===== Reed-Kontakt =====
-#define DOOR_PIN       4           // Reed-Kontakt gegen GND (geschlossen = LOW)
+// Pin per Build-Flag aenderbar, z. B. -D DOOR_PIN=17 (Default: Heltec V3)
+#ifndef DOOR_PIN
+  #define DOOR_PIN     4           // Reed-Kontakt gegen GND (geschlossen = LOW)
+#endif
 #define DEBOUNCE_MS    200         // Tuerprellen abwarten
 #define COOLDOWN_MS    60000UL     // max. 1 Meldung pro Minute
 #define MAX_PER_HOUR   20          // Notbremse: max. 20 Meldungen pro Stunde
