@@ -32,6 +32,64 @@ Dazu ein Breadboard, Steckbrücken und ein USB-C-Kabel. Der Buzzer muss ein akti
 
 Nicht verwenden: GPIO 0 (Boot-Taster), 8–14 (LoRa), 17/18/21 (OLED), 19/20 (USB), 26/47/48 (GPS), 33/34 (I2C für Umweltsensoren), 35 (Onboard-LED), 36/37 (Vext und Akku-Messung).
 
+## Breadboard bestücken
+
+Am einfachsten geht es auf einem großen Breadboard mit 830 Löchern: oben die Taster und Ausgänge, unten der Heltec, dazwischen die GND-Schiene. Alles ohne Strom aufbauen und den USB-Stecker erst ganz am Ende anstecken.
+
+![Schaltplan](schaltplan.svg)
+
+Der Schaltplan zeigt die elektrischen Verbindungen, die Schritte darunter, wie sie aufs Breadboard kommen. Ob der LED-Widerstand vor oder hinter der LED sitzt, ist egal.
+
+**So ist ein Breadboard aufgebaut:**
+
+- Die langen Schienen am Rand (rot +, blau −) sind der Länge nach verbunden. Bei manchen Boards ist die Schiene in der Mitte unterbrochen, dann beide Hälften mit einer kurzen Brücke verbinden.
+- Im Mittelfeld sind immer fünf Löcher einer Querreihe verbunden (a–e bzw. f–j). Der Graben in der Mitte trennt die beiden Hälften.
+- Was in derselben Fünfergruppe steckt, ist elektrisch verbunden. Eine Steckbrücke führt vom Bauteil in eine freie Fünfergruppe, in der schon das Kabel zum Heltec steckt.
+
+**Aufteilung:**
+
+```
+  blaue Schiene (−)  ══════════════════════ GND für alle Bauteile ═══════
+
+   [T1]    [T2]    [T3]    [T4]      LED+R     Buzzer      <- obere Hälfte
+  ───────────────────── Graben ──────────────────────────
+   Steckbrücken zu den GPIOs                                <- untere Hälfte
+
+  ┌────────────── Heltec V3 (über den Graben oder am Rand) ──────────────┐
+  │ GPIO 4 · 5 · 6 · 7 · 41 · 42 · GND        USB-C            Antenne   │
+  └──────────────────────────────────────────────────────────────────────┘
+```
+
+**Schritte:**
+
+1. **Heltec einsetzen.** Antenne zuerst anstecken. Dann den Heltec so einsetzen, dass jeder Pin in seiner eigenen Fünfergruppe steckt und daneben noch mindestens ein freies Loch für ein Kabel bleibt. Der Heltec V3 ist breit: Passt er über den Graben nicht so, dass beide Pinreihen noch freie Löcher haben, zwei Breadboards nebeneinander nehmen oder die Pins mit Buchse-Stecker-Kabeln direkt abgreifen. Die GPIO-Nummern stehen neben den Pins auf der Platine, nach diesem Aufdruck gehen, nicht nach der Position.
+2. **GND auf die Schiene.** Von einem GND-Pin des Heltec eine Steckbrücke auf die blaue Schiene (−) legen. 3,3 V braucht dieser Aufbau nicht, die Taster nutzen die internen Pull-ups.
+3. **Taster setzen.** Jeden Taster über den Graben stecken, mit etwas Abstand zueinander. Ein 4-beiniger Taster hat zwei Beinpaare, die immer verbunden sind. Die sichere Regel: zwei Beine verwenden, die sich diagonal gegenüberliegen. Dann schaltet er in jeder Lage richtig.
+4. **Taster verdrahten.** Für jeden Taster ein diagonales Bein mit der blauen Schiene verbinden, das andere mit seinem GPIO: Taster 1 an GPIO 4, Taster 2 an GPIO 5, Taster 3 an GPIO 6, Taster 4 an GPIO 7.
+5. **LED setzen.** Das lange Bein (Anode, +) in eine freie Fünfergruppe, das kurze Bein (Kathode, flache Seite am Gehäuse) in eine andere. Von der Anode eine Steckbrücke zu GPIO 41. Den Widerstand (220–330 Ω) von der Kathoden-Gruppe auf die blaue Schiene.
+6. **Buzzer setzen.** Plus ist markiert (Aufkleber „+“, längeres Bein). Plus in eine freie Gruppe und mit GPIO 42 verbinden, Minus direkt auf die blaue Schiene.
+7. **Kontrolle vor dem Einschalten.**
+   - Jeder Taster: ein Bein auf GND, das diagonale auf seinem GPIO
+   - Kein Kabel auf 3V3, 5V oder VBAT
+   - LED mit Widerstand, nicht direkt zwischen GPIO und GND
+   - Keine zwei GPIOs in derselben Fünfergruppe
+8. **Einschalten.** USB-C anstecken. Sobald die Firmware drauf ist, reagieren LED und Buzzer bei jedem Tastendruck kurz.
+
+| Von | Nach | Kabelfarbe (Vorschlag) |
+| --- | --- | --- |
+| Heltec GND | blaue Schiene | schwarz |
+| Taster 1, Bein A | GPIO 4 | rot |
+| Taster 2, Bein A | GPIO 5 | blau |
+| Taster 3, Bein A | GPIO 6 | gelb |
+| Taster 4, Bein A | GPIO 7 | weiß |
+| Taster 1–4, diagonales Bein B | blaue Schiene | schwarz |
+| LED Anode (langes Bein) | GPIO 41 | grün |
+| LED Kathode | Widerstand → blaue Schiene | – |
+| Buzzer + | GPIO 42 | orange |
+| Buzzer − | blaue Schiene | schwarz |
+
+Wenn ein Taster nichts tut: Meistens stecken die zwei verwendeten Beine im selben verbundenen Paar. Dann ist der Taster ständig „gedrückt“ oder nie. Ein Bein um eine Position versetzen, also wirklich diagonal.
+
 ## Firmware bauen
 
 Gebaut wird mit VS Code und der PlatformIO-Erweiterung, das Build-Target `Heltec_v3_sensor` ist im MeshCore-Repo schon vorhanden.

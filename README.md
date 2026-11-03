@@ -19,7 +19,8 @@ Basis ist das offizielle Beispiel `examples/simple_sensor`. Geändert wird nur d
 
 | Datei | Inhalt |
 | --- | --- |
-| [`docs/anleitung.md`](docs/anleitung.md) | Schritt-für-Schritt-Anleitung: Verdrahtung, Build, Code, Test, Spielregeln |
+| [`docs/anleitung.md`](docs/anleitung.md) | Schritt-für-Schritt-Anleitung: Verdrahtung, Breadboard, Build, Code, Test, Spielregeln |
+| [`docs/schaltplan.svg`](docs/schaltplan.svg) | Schaltplan (auch als PNG) |
 | [`firmware/main.cpp`](firmware/main.cpp) | fertige `main.cpp` für `examples/simple_sensor` |
 | [`firmware/simple_sensor-buttons.patch`](firmware/simple_sensor-buttons.patch) | dieselben Änderungen als Patch für `git apply` |
 
@@ -37,6 +38,8 @@ pio run -e Heltec_v3_sensor -t upload
 Danach im Companion mit dem Admin-Passwort am Sensor anmelden und einen Taster drücken. Details in der [Anleitung](docs/anleitung.md).
 
 ## Verdrahtung
+
+![Schaltplan](docs/schaltplan.svg)
 
 | Bauteil | Heltec-V3-Pin | Anschluss |
 | --- | --- | --- |
