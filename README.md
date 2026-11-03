@@ -15,6 +15,8 @@ Ein Sensor- und Aktor-Node für [MeshCore](https://github.com/meshcore-dev/MeshC
 
 Basis ist das offizielle Beispiel `examples/simple_sensor`. Geändert wird nur dessen `main.cpp`.
 
+**Warum nicht mit der Standard-Firmware?** Keine der fertigen MeshCore-Firmwares (Companion, Repeater, Room Server, Sensor) fragt externe GPIOs ab, ein Taster an GPIO 4 wird dort einfach ignoriert. Dafür gibt es den offenen Feature-Request [GPIO support in MeshCore (#3522)](https://github.com/meshcore-dev/MeshCore/issues/3522), GPIOs künftig per CLI zu lesen und zu schalten. Bis das umgesetzt ist, braucht es eigenen Code wie diesen.
+
 ## Inhalt
 
 | Datei | Inhalt |
