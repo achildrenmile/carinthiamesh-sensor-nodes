@@ -55,6 +55,18 @@ th{color:var(--mute);font-weight:600}
 .chip.y b{color:var(--ok)}.chip.n b{color:var(--warn)}.chip.x b{color:var(--bad)}
 .tag{font-size:11px;font-weight:600;border:1px solid var(--line);border-radius:99px;padding:1px 8px;margin-left:8px;text-transform:none;letter-spacing:0;color:var(--mute)}
 .run{grid-column:1/-1}.run .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media (max-width:860px){.run .cols{grid-template-columns:1fr}}.run h3{font-size:13px;margin:0 0 6px}.run ul,.run ol{margin:0;padding-left:18px}.run li{margin:3px 0}code{font-size:12.5px}
+details.code{grid-column:1/-1}details.code>summary{cursor:pointer;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.codebar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:10px 0 8px;font-size:13px}
+pre.src{margin:0;max-height:420px;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 0;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;tab-size:2}
+pre.src .l{display:block;padding:0 12px 0 0;white-space:pre}
+pre.src .n{display:inline-block;width:44px;text-align:right;padding-right:12px;color:var(--mute);user-select:none}
+pre.src .c{color:var(--mute)}pre.src .p{color:var(--acc)}pre.src .cut{background:rgba(185,119,14,.14)}
+.flags{font:12.5px ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+details.help{grid-column:1/-1}details.help>summary{cursor:pointer;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.help dl{margin:10px 0 0;display:grid;grid-template-columns:minmax(120px,200px) 1fr;gap:6px 16px}.help dt{font-weight:600}.help dd{margin:0}
+@media (max-width:860px){.help dl{grid-template-columns:1fr;gap:0}.help dd{margin-bottom:8px}}
+.help h3{font-size:13px;margin:14px 0 4px}.help ol,.help ul{margin:0;padding-left:18px}
+header nav{margin-top:6px;font-size:13px}header nav a{margin-right:14px}
 a{color:var(--acc)}
 .mesh text{font-size:12px}
 </style>
@@ -63,6 +75,7 @@ a{color:var(--acc)}
 <header>
   <h1>CarinthiaMesh Sensor-Simulator</h1>
   <p>Sensor-Beispiele für MeshCore am virtuellen Aufbau ausprobieren, bevor etwas gelötet wird.</p>
+  <nav><a href="#help" id="helplink">Hilfe</a><a href="#codecard">Programmcode</a><a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes">Projekt auf GitHub</a></nav>
 </header>
 <main>
   <section class="card about">
@@ -144,6 +157,57 @@ a{color:var(--acc)}
     <div id="logbox"><table><thead><tr><th>Zeit</th><th>Von</th><th>An</th><th>Typ</th><th>Byte</th><th></th></tr></thead><tbody id="log"></tbody></table></div>
   </section>
 
+  <details class="card code" open id="codecard">
+    <summary>Programmcode dieses Beispiels</summary>
+    <div class="codebar">
+      <span id="codeinfo"></span>
+      <label><input type="checkbox" id="fullsrc"> auch den nicht simulierten Rest zeigen (Board-Start)</label>
+      <button id="copysrc" type="button">Kopieren</button>
+    </div>
+    <div class="codebar">Build-Flags für <b id="flagboard"></b>: <span class="flags" id="flagtxt"></span></div>
+    <pre class="src" id="srcview" tabindex="0" aria-label="Quellcode"></pre>
+    <div class="note" style="margin-top:6px">Das ist genau der Text aus <code>examples/…/firmware/main.cpp</code>, der hier zusammen mit dem MeshCore-Kern kompiliert wurde. Der MeshCore-Kern selbst (<code>SensorMesh</code>, Verschlüsselung, Alerts) liegt im <a href="https://github.com/meshcore-dev/MeshCore/tree/81dbae5/examples/simple_sensor">MeshCore-Repository</a>.</div>
+  </details>
+
+  <details class="card help" id="help">
+    <summary>Hilfe</summary>
+    <h3>In drei Schritten</h3>
+    <ol>
+      <li>Oben Beispiel und Board wählen. Das Board bestimmt nur, an welchen Pins die Teile hängen (so wie beim echten Build).</li>
+      <li>Rechts <b>„Am Sensor anmelden“</b> klicken und warten, bis „angemeldet“ steht. Erst dann schickt der Sensor Alerts an das Handy.</li>
+      <li>Am Aufbau etwas auslösen (Tür öffnen, Wasser anlegen, Taster drücken, Temperatur ändern) und im Handy und im Funkprotokoll zusehen.</li>
+    </ol>
+    <h3>Bedienelemente</h3>
+    <dl>
+      <dt>Über Repeater</dt><dd>Schaltet einen Repeater zwischen Sensor und Handy. Die Pakete laufen dann über zwei Funkstrecken.</dd>
+      <dt>Paketverlust</dt><dd>Anteil der Pakete, der auf jeder Funkstrecke verloren geht. Ab etwa 40 % sieht man Wiederholungen.</dd>
+      <dt>Neu starten</dt><dd>Setzt Sensor, Handy und Zeit zurück. Nötig nach dem Ändern von Repeater oder Paketverlust, das passiert automatisch.</dd>
+      <dt>Batterie</dt><dd>Spannung, die der Sensor misst. Unter 3600 mV kommt „Battery is low“, unter 3400 mV „Battery is critical!“.</dd>
+      <dt>Zeit</dt><dd>Geschwindigkeit der simulierten Zeit. „+1 Minute“ und „+10 Minuten“ springen sofort. Bei Pause passiert nichts.</dd>
+      <dt>Handy bestätigt (ACK)</dt><dd>Wenn ausgeschaltet, bestätigt das Handy Alerts nicht. Hoch priorisierte Alerts (z. B. Wasser) werden dann wiederholt.</dd>
+      <dt>Admin-Befehl</dt><dd>Text an den Sensor, wie in der App im Admin-Bereich. Je Beispiel z. B. <code>status</code>, beim Tasterfeld <code>led on</code>, <code>led off</code>, <code>beep</code>.</dd>
+      <dt>Programmcode</dt><dd>Zeigt den Code des Beispiels, der hier läuft, und die Build-Flags des gewählten Boards.</dd>
+    </dl>
+    <h3>Begriffe</h3>
+    <dl>
+      <dt>Alert</dt><dd>Direktnachricht vom Sensor an alle angemeldeten Handys. Niedrige Priorität wird einmal gesendet, hohe wiederholt bis zur Bestätigung.</dd>
+      <dt>Anmeldung</dt><dd>Das Handy meldet sich mit dem Admin-Passwort (<code>password</code>) am Sensor an. Danach kennt der Sensor es als Empfänger.</dd>
+      <dt>ACK</dt><dd>Empfangsbestätigung. Ohne sie nimmt der Sensor an, dass ein hoch priorisierter Alert nicht angekommen ist.</dd>
+      <dt>Cooldown, Stundenbudget</dt><dd>Begrenzungen im Beispielcode: höchstens eine Meldung pro Minute und 20 pro Stunde, damit der Funk nicht überlastet wird.</dd>
+      <dt>Entprellen</dt><dd>Kurze Schaltimpulse unter 200 ms (Kontaktprellen) zählen nicht als Auslöser.</dd>
+      <dt>Sendeanteil</dt><dd>Anteil der Zeit, in der der Sensor funkt. Im EU-868-Band gilt je nach Unterband eine Grenze von 1 % oder 10 %.</dd>
+      <dt>Advert</dt><dd>Kurzes Lebenszeichen, das ein Sensor regelmäßig sendet. Es tauchen im Funkprotokoll daher auch ohne Auslöser Pakete auf.</dd>
+    </dl>
+    <h3>Wenn etwas nicht klappt</h3>
+    <dl>
+      <dt>Es kommt kein Alert</dt><dd>Prüfen, ob „angemeldet“ steht, ob die Zeit nicht auf Pause steht und ob der Cooldown (60 s) schon abgelaufen ist. Bei hohem Paketverlust kann die Anmeldung mehrere Versuche brauchen.</dd>
+      <dt>Alert kommt doppelt</dt><dd>Bei hoch priorisierten Alerts bekannt: Die erste Meldung kann doppelt ankommen (siehe <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/sim/README.md#befunde">sim/README.md</a>).</dd>
+      <dt>Klimasensor meldet nichts</dt><dd>„BME280 angeschlossen“ aktivieren. Ohne Sensor gibt es keine Messwerte.</dd>
+      <dt>Die Seite bleibt leer</dt><dd>Der Browser braucht WebAssembly (alle aktuellen Browser). Bei lokaler Nutzung die Datei <code>index.html</code> aus dem entpackten ZIP öffnen, nicht aus dem ZIP selbst.</dd>
+      <dt>Funktioniert das auch in echt?</dt><dd>Das zeigt nur ein Test mit Hardware. Hier ist die Programmlogik geprüft, nicht Verdrahtung, Treiber und Funk (siehe Kasten ganz oben).</dd>
+    </dl>
+  </details>
+
   <section class="card run">
     <h2>Was läuft hier genau, und wie nutze ich es?</h2>
     <div class="cols">
@@ -160,7 +224,7 @@ a{color:var(--acc)}
         <h3>So nutzt du es</h3>
         <ol>
           <li><b>Online:</b> Beispiel und Board wählen, „Am Sensor anmelden“ klicken, dann den Aufbau bedienen. Die Tipps stehen oben unter „Zeit“.</li>
-          <li><b>Lokal ohne Internet:</b> <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/releases/download/simulator-v0.1.0/carinthiamesh-simulator.zip">carinthiamesh-simulator.zip</a> laden, entpacken, <code>index.html</code> im Browser öffnen. Es braucht keine Installation.</li>
+          <li><b>Lokal ohne Internet:</b> <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/releases/download/simulator-v0.2.0/carinthiamesh-simulator.zip">carinthiamesh-simulator.zip</a> laden, entpacken, <code>index.html</code> im Browser öffnen. Es braucht keine Installation.</li>
           <li><b>Selbst bauen</b> (wenn du die Beispiele änderst): Anleitung in <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/sim/README.md#im-browser-webassembly">sim/README.md</a>. Die gleiche Logik läuft dort auch als Test auf dem PC (<code>make -C sim test</code>).</li>
           <li><b>Danach auf echte Hardware:</b> Aufbau, Flashen und Test stehen im <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes#getting-started-schritt-für-schritt">Getting Started</a>. Gebaut wird dort mit PlatformIO, nicht mit dieser Seite.</li>
         </ol>
@@ -202,7 +266,7 @@ async function start(){
     try { await loadScript(`wasm/${ex}-${bd}.js`); } catch(e){ $('phonestat').textContent=e.message; return; }
     window.__simKey = ex+bd;
   }
-  describeRun(ex, bd);
+  describeRun(ex, bd); loadSrc(ex);
   M = await window.createSim();
   if (my !== gen) return;
   for (const n of ['sim_start:null:number,number','sim_run:null:number','sim_login:null:','sim_command:null:string','sim_auto_ack:null:number','sim_pin_set:null:number,number','sim_pin_release:null:number','sim_pin_out:number:number','sim_env:null:number,number,number,number','sim_battery:null:number','sim_now:number:'])
@@ -360,6 +424,32 @@ function frame(t){
   requestAnimationFrame(frame);
 }
 
+
+/* ---------- Quellcode anzeigen ---------- */
+const esc2 = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function renderSrc(){
+  const d = window.SRC && window.SRC[$('ex').value]; if (!d) { $('srcview').textContent='Code nicht geladen.'; return; }
+  const full = $('fullsrc').checked, bd = $('board').value;
+  const appLines = d.app.split('\n').length - 1;
+  const lines = (full ? d.full : d.app).replace(/\n$/,'').split('\n');
+  $('srcview').innerHTML = lines.map((l,i)=>{
+    let h = esc2(l);
+    if (/^\s*#/.test(l)) h = '<span class="p">'+h+'</span>';
+    else h = h.replace(/(\/\/.*)$/,'<span class="c">$1</span>');
+    return `<span class="l${full && i>=appLines ? ' cut':''}"><span class="n">${i+1}</span>${h}</span>`;
+  }).join('');
+  $('codeinfo').textContent = full ? `main.cpp komplett (${lines.length} Zeilen), hinterlegt ab Zeile ${appLines+1}: läuft hier nicht` : `${appLines} Zeilen, so kompiliert`;
+  const f = d.flags[bd]; $('flagboard').textContent = BOARDS[bd] ? BOARDS[bd].name : bd;
+  $('flagtxt').textContent = f || 'keine: die Standard-Pins im Code gelten (Heltec V3)';
+}
+async function loadSrc(ex){
+  if (window.SRC && window.SRC[ex]) return renderSrc();
+  try { await loadScript(`code/${ex}.js`); } catch(e){ $('srcview').textContent = e.message; return; }
+  renderSrc();
+}
+$('fullsrc').onchange = renderSrc;
+$('copysrc').onclick = async () => { try { await navigator.clipboard.writeText($('srcview').innerText.replace(/^\s*\d+/gm,'')); $('copysrc').textContent='Kopiert'; setTimeout(()=>$('copysrc').textContent='Kopieren',1500); } catch(e){ $('copysrc').textContent='Nicht möglich'; } };
+
 /* ---------- Steuerung ---------- */
 $('ex').onchange=$('board').onchange=$('restart').onclick=()=>{state.door=false;state.wet=false;state.press=[false,false,false,false];start()};
 $('rep').onchange=$('loss').onchange=()=>{$('lossv').textContent=$('loss').value+' %';start()};
@@ -367,6 +457,8 @@ $('loss').oninput=()=>$('lossv').textContent=$('loss').value+' %';
 $('speed').onchange=()=>speed=+$('speed').value;
 $('batt').oninput=()=>{$('battv').textContent=$('batt').value+' mV'; if(M) fn.sim_battery(+$('batt').value)};
 $('autoack').onchange=()=>fn.sim_auto_ack($('autoack').checked?1:0);
+if (location.hash==='#help') $('help').open=true;
+$('helplink').onclick=()=>{$('help').open=true};
 $('login').onclick=()=>{fn.sim_login(); if(speed===0){$('speed').value='10';speed=10}};
 $('cmdform').onsubmit=ev=>{ev.preventDefault(); const c=$('cmd').value.trim(); if(!c||!M) return; addMsg(c,'Befehl an den Sensor','reply'); fn.sim_command(c); $('cmd').value=''; if(speed===0){$('speed').value='10';speed=10}};
 document.querySelectorAll('[data-skip]').forEach(b=>b.onclick=()=>{ if(M){ const total=+b.dataset.skip; for(let d=0; d<total; d+=5000){ fn.sim_run(Math.min(5000,total-d)); poll(); } } });
