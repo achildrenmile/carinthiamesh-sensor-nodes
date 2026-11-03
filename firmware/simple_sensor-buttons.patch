@@ -1,0 +1,122 @@
+diff --git a/examples/simple_sensor/main.cpp b/examples/simple_sensor/main.cpp
+index 66991da..42d44db 100644
+--- a/examples/simple_sensor/main.cpp
++++ b/examples/simple_sensor/main.cpp
+@@ -5,6 +5,15 @@
+   static UITask ui_task(display);
+ #endif
+ 
++// ===== Taster, LED, Buzzer =====
++static const uint8_t BTN_PINS[4] = { 4, 5, 6, 7 };   // Taster gegen GND
++#define LED_PIN        41
++#define BUZZER_PIN     42
++#define DEBOUNCE_MS    50          // Entprellen
++#define COOLDOWN_MS    30000UL     // max. 1 Meldung pro Taster alle 30 s
++#define MAX_PER_HOUR   20          // Notbremse: max. 20 Meldungen pro Stunde
++#define FEEDBACK_MS    120         // LED/Buzzer-Dauer bei Druck
++
+ class MyMesh : public SensorMesh {
+ public:
+   MyMesh(mesh::MainBoard& board, mesh::Radio& radio, mesh::MillisecondClock& ms, mesh::RNG& rng, mesh::RTCClock& rtc, mesh::MeshTables& tables)
+@@ -13,8 +22,55 @@ public:
+   {
+   }
+ 
++  void beginInputs() {
++    for (int i = 0; i < 4; i++) pinMode(BTN_PINS[i], INPUT_PULLUP);
++    pinMode(LED_PIN, OUTPUT);
++    pinMode(BUZZER_PIN, OUTPUT);
++  }
++
++  void pollInputs() {
++    unsigned long now = millis();
++    if (feedback_until && now > feedback_until) {   // Rueckmeldung beenden
++      digitalWrite(LED_PIN, LOW);
++      digitalWrite(BUZZER_PIN, LOW);
++      feedback_until = 0;
++    }
++    for (int i = 0; i < 4; i++) {
++      bool pressed = (digitalRead(BTN_PINS[i]) == LOW);
++      if (pressed != raw[i]) { raw[i] = pressed; changed_at[i] = now; }
++      if (now - changed_at[i] < DEBOUNCE_MS || pressed == stable[i]) continue;
++      stable[i] = pressed;
++      if (!pressed) continue;                 // nur Druecken melden, Loslassen nicht
++
++      digitalWrite(LED_PIN, HIGH);            // lokale Rueckmeldung, kostet keine Airtime
++      digitalWrite(BUZZER_PIN, HIGH);
++      feedback_until = now + FEEDBACK_MS;
++
++      if (last_sent[i] && now - last_sent[i] < COOLDOWN_MS) continue;  // Cooldown
++      if (!budgetOk(now)) continue;                                     // Stundenbudget
++      last_sent[i] = now;
++
++      char text[32];
++      snprintf(text, sizeof(text), "Taster %d gedrueckt", i + 1);
++      alertIf(false, btn_alert[i], LOW_PRI_ALERT, "");   // alten Alert zuruecksetzen
++      alertIf(true,  btn_alert[i], LOW_PRI_ALERT, text); // neuen Alert einreihen
++    }
++  }
++
+ protected:
+   /* ========================== custom logic here ========================== */
++  Trigger btn_alert[4];
++  bool raw[4] = {}, stable[4] = {};
++  unsigned long changed_at[4] = {}, last_sent[4] = {};
++  unsigned long hour_start = 0, feedback_until = 0;
++  uint8_t sent_this_hour = 0;
++
++  bool budgetOk(unsigned long now) {
++    if (now - hour_start > 3600000UL) { hour_start = now; sent_this_hour = 0; }
++    if (sent_this_hour >= MAX_PER_HOUR) return false;
++    sent_this_hour++;
++    return true;
++  }
+   Trigger low_batt, critical_batt;
+   TimeSeriesData  battery_data;
+ 
+@@ -22,8 +78,9 @@ protected:
+     float batt_voltage = getVoltage(TELEM_CHANNEL_SELF);
+ 
+     battery_data.recordData(getRTCClock(), batt_voltage);   // record battery
+-    alertIf(batt_voltage < 3.4f, critical_batt, HIGH_PRI_ALERT, "Battery is critical!");
+-    alertIf(batt_voltage < 3.6f, low_batt, LOW_PRI_ALERT, "Battery is low");
++    bool has_batt = batt_voltage > 2.5f;   // ohne Akku (nur USB) keine Akku-Alarme
++    alertIf(has_batt && batt_voltage < 3.4f, critical_batt, HIGH_PRI_ALERT, "Battery is critical!");
++    alertIf(has_batt && batt_voltage < 3.6f, low_batt, LOW_PRI_ALERT, "Battery is low");
+   }
+ 
+   int querySeriesData(uint32_t start_secs_ago, uint32_t end_secs_ago, MinMaxAvg dest[], int max_num) override {
+@@ -32,9 +89,14 @@ protected:
+   }
+ 
+   bool handleCustomCommand(uint32_t sender_timestamp, char* command, char* reply) override {
+-    if (strcmp(command, "magic") == 0) {    // example 'custom' command handling
+-      strcpy(reply, "**Magic now done**");
+-      return true;   // handled
++    // Aktor-Befehle, aus der Companion-App ueber die Admin-Konsole des Sensors
++    if (strcmp(command, "led on") == 0)  { digitalWrite(LED_PIN, HIGH); strcpy(reply, "LED an");  return true; }
++    if (strcmp(command, "led off") == 0) { digitalWrite(LED_PIN, LOW);  strcpy(reply, "LED aus"); return true; }
++    if (strcmp(command, "beep") == 0) {
++      digitalWrite(BUZZER_PIN, HIGH);
++      feedback_until = millis() + 500;   // pollInputs() schaltet wieder ab
++      strcpy(reply, "Beep");
++      return true;
+     }
+     return false;  // not handled
+   }
+@@ -109,6 +171,7 @@ void setup() {
+   sensors.begin();
+ 
+   the_mesh.begin(fs);
++  the_mesh.beginInputs();
+ 
+ #ifdef DISPLAY_CLASS
+   ui_task.begin(the_mesh.getNodePrefs(), FIRMWARE_BUILD_DATE, FIRMWARE_VERSION);
+@@ -156,6 +219,7 @@ void loop() {
+   board.loop();   // let the board feed its watchdog, run periodic housekeeping
+ 
+   the_mesh.loop();
++  the_mesh.pollInputs();
+   sensors.loop();
+ #ifdef DISPLAY_CLASS
+   ui_task.loop();
