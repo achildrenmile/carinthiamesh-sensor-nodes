@@ -22,6 +22,6 @@ SOFTWARE.
 
 ---
 
-firmware/main.cpp is derived from examples/simple_sensor/main.cpp of MeshCore
+Files under examples/*/firmware/ are derived from examples/simple_sensor/main.cpp of MeshCore
 (https://github.com/meshcore-dev/MeshCore), MIT License,
 Copyright (c) 2025 Scott Powell / rippleradios.com

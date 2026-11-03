@@ -105,13 +105,13 @@ Gebaut wird mit VS Code und der PlatformIO-Erweiterung, das Build-Target `Heltec
 3. Die Änderungen aus diesem Repo übernehmen, entweder die fertige Datei kopieren:
 
    ```bash
-   cp ../meshcore-button-sensor/firmware/main.cpp examples/simple_sensor/main.cpp
+   cp ../carinthiamesh-sensor-nodes/examples/button-sensor/firmware/main.cpp examples/simple_sensor/main.cpp
    ```
 
    oder den Patch anwenden (geht auch auf neueren Ständen, solange sich `main.cpp` nicht stark geändert hat):
 
    ```bash
-   git apply ../meshcore-button-sensor/firmware/simple_sensor-buttons.patch
+   git apply ../carinthiamesh-sensor-nodes/examples/button-sensor/firmware/simple_sensor-buttons.patch
    ```
 4. In `variants/heltec_v3/platformio.ini` beim Abschnitt `[env:Heltec_v3_sensor]` Name und Passwort anpassen:
 
@@ -129,7 +129,7 @@ Name und Passwort lassen sich nach dem Flashen auch über die serielle Konsole �
 
 ## Code
 
-Alle Änderungen betreffen nur `examples/simple_sensor/main.cpp`, der Rest der MeshCore-Firmware bleibt unverändert. Die vollständige Datei liegt unter [`firmware/main.cpp`](../firmware/main.cpp).
+Alle Änderungen betreffen nur `examples/simple_sensor/main.cpp`, der Rest der MeshCore-Firmware bleibt unverändert. Die vollständige Datei liegt unter [`firmware/main.cpp`](firmware/main.cpp).
 
 Pro Taster gilt: entprellen, nur das Drücken melden, höchstens eine Meldung alle 30 Sekunden, insgesamt höchstens 20 pro Stunde. LED und Buzzer geben bei jedem Druck lokal Rückmeldung, auch wenn keine Meldung rausgeht.
 

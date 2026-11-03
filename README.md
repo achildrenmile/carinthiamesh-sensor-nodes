@@ -1,62 +1,53 @@
-# meshcore-button-sensor
+# carinthiamesh-sensor-nodes
 
-Ein Sensor- und Aktor-Node für [MeshCore](https://github.com/meshcore-dev/MeshCore): vier Taster, eine LED und ein Buzzer an einem Heltec V3. Ein Tastendruck schickt eine Direktnachricht an angemeldete Companions (App oder T-Deck), LED und Buzzer lassen sich aus der App fernsteuern.
+Beispiele für Sensor- und Aktor-Nodes im [MeshCore](https://github.com/meshcore-dev/MeshCore)-Netz, gesammelt von der CarinthiaMesh-Initiative in Kärnten. Jedes Beispiel ist ein kleiner, nachbaubarer Aufbau: Hardware, Schaltplan, Code und eine Schritt-für-Schritt-Anleitung.
 
-*English: A MeshCore sensor/actuator node example for the Heltec V3 with four buttons, an LED and a buzzer. Button presses are sent as rate-limited direct-message alerts; the LED and buzzer can be switched remotely via custom admin commands. Documentation is in German.*
+*English: A collection of MeshCore sensor and actuator node examples from the CarinthiaMesh initiative (Carinthia, Austria). Each example ships wiring, a schematic, firmware changes and a step-by-step guide. Documentation is in German.*
 
-## Was es kann
+## Beispiele
 
-- 4 Taster an GPIO 4–7, entprellt, nur das Drücken wird gemeldet
-- Meldung als Low-Priority-Alert per Direktnachricht, kein Public-Kanal
-- Airtime-Schutz: max. 1 Meldung pro Taster alle 30 s, max. 20 pro Stunde
-- LED (GPIO 41) und aktiver Buzzer (GPIO 42) als lokale Rückmeldung
-- Fernsteuerung über die Admin-Konsole: `led on`, `led off`, `beep`
-- Akku-Alarme der Vorlage nur, wenn wirklich ein Akku dran ist
+| Beispiel | Hardware | Was es macht | Status |
+| --- | --- | --- | --- |
+| [button-sensor](examples/button-sensor/) | Heltec V3, 4 Taster, LED, Buzzer | Tastendruck als DM-Alert, LED und Buzzer per Admin-Befehl schaltbar | nicht auf Hardware getestet |
 
-Basis ist das offizielle Beispiel `examples/simple_sensor`. Geändert wird nur dessen `main.cpp`.
+Weitere Beispiele sind willkommen, siehe [Mitmachen](#mitmachen).
 
-**Warum nicht mit der Standard-Firmware?** Keine der fertigen MeshCore-Firmwares (Companion, Repeater, Room Server, Sensor) fragt externe GPIOs ab, ein Taster an GPIO 4 wird dort einfach ignoriert. Dafür gibt es den offenen Feature-Request [GPIO support in MeshCore (#3522)](https://github.com/meshcore-dev/MeshCore/issues/3522), GPIOs künftig per CLI zu lesen und zu schalten. Bis das umgesetzt ist, braucht es eigenen Code wie diesen.
+## Wie Sensor-Nodes bei MeshCore funktionieren
 
-## Inhalt
+Alle Beispiele bauen auf der offiziellen Vorlage [`examples/simple_sensor`](https://github.com/meshcore-dev/MeshCore/tree/main/examples/simple_sensor) auf. Eine Einführung gibt der [MeshCore-Blog: Sensor Node Intro](https://blog.meshcore.io/2026/09/14/sensor-intro).
+
+- **Eigener Build pro Anwendung.** Für Sensor-Nodes gibt es keine fertige Firmware im Flasher. Man passt `main.cpp` an und baut mit PlatformIO.
+- **Alerts gehen als Direktnachricht** an alle Companions, die sich mit dem Admin-Passwort am Sensor angemeldet haben. Niedrige Priorität sendet einmal, hohe wiederholt bis zum ACK.
+- **Telemetrie** (Akku, Umweltsensoren) können angemeldete Companions abfragen.
+- **Eigene Befehle** in `handleCustomCommand()` machen aus dem Sensor einen Aktor, gesteuert über die Admin-Konsole der App.
+
+### Warum nicht mit der Standard-Firmware?
+
+Keine der fertigen MeshCore-Firmwares (Companion, Repeater, Room Server, Sensor) fragt externe GPIOs ab. Ein Taster oder Kontakt an einem freien Pin wird dort einfach ignoriert. Dafür gibt es den offenen Feature-Request [GPIO support in MeshCore (#3522)](https://github.com/meshcore-dev/MeshCore/issues/3522), GPIOs künftig per CLI zu lesen und zu schalten. Bis das umgesetzt ist, braucht es eigenen Code wie in diesen Beispielen.
+
+## Spielregeln für das Mesh
+
+Solange Sensor und Empfänger nebeneinander liegen, ist alles Zero-Hop und das Netz merkt nichts. Sobald ein Node über Repeater läuft, kostet jede Nachricht Airtime auf allen Repeatern im Pfad. Ohne bekannten Pfad geht sie sogar per Flood durchs ganze Netz.
+
+- Direktnachricht statt Public-Kanal: keine Sensor- oder Testdaten in öffentliche Kanäle
+- Rate-Limit ist Pflicht: Entprellen, Cooldown und ein Stundenbudget
+- Nur Änderungen melden, Messwerte selten und gesammelt
+- Wenige Empfänger, denn jeder bekommt jede Meldung einzeln
+- Neue Nodes kurz in der lokalen Community ankündigen
+
+## Mitmachen
+
+Ein neues Beispiel bekommt einen eigenen Ordner unter `examples/<name>/` mit:
 
 | Datei | Inhalt |
 | --- | --- |
-| [`docs/anleitung.md`](docs/anleitung.md) | Schritt-für-Schritt-Anleitung: Verdrahtung, Breadboard, Build, Code, Test, Spielregeln |
-| [`docs/schaltplan.svg`](docs/schaltplan.svg) | Schaltplan (auch als PNG) |
-| [`firmware/main.cpp`](firmware/main.cpp) | fertige `main.cpp` für `examples/simple_sensor` |
-| [`firmware/simple_sensor-buttons.patch`](firmware/simple_sensor-buttons.patch) | dieselben Änderungen als Patch für `git apply` |
+| `README.md` | Steckbrief: Hardware, Build-Target, was gemeldet wird, Airtime-Schutz, getesteter MeshCore-Stand, Status |
+| `anleitung.md` | Verdrahtung, Aufbau, Build, Test |
+| `schaltplan.svg` | Schaltplan |
+| `firmware/` | geänderte `main.cpp` und ein Patch gegen `simple_sensor` |
 
-## Schnellstart
-
-```bash
-git clone https://github.com/meshcore-dev/MeshCore.git
-git clone https://github.com/achildrenmile/meshcore-button-sensor.git
-cd MeshCore
-cp ../meshcore-button-sensor/firmware/main.cpp examples/simple_sensor/main.cpp
-# ADVERT_NAME und ADMIN_PASSWORD in variants/heltec_v3/platformio.ini [env:Heltec_v3_sensor] anpassen
-pio run -e Heltec_v3_sensor -t upload
-```
-
-Danach im Companion mit dem Admin-Passwort am Sensor anmelden und einen Taster drücken. Details in der [Anleitung](docs/anleitung.md).
-
-## Verdrahtung
-
-![Schaltplan](docs/schaltplan.svg)
-
-| Bauteil | Heltec-V3-Pin | Anschluss |
-| --- | --- | --- |
-| Taster 1–4 | GPIO 4, 5, 6, 7 | andere Seite an GND (interne Pull-ups) |
-| LED | GPIO 41 | über 220–330 Ω an GND |
-| Aktiver Buzzer (3,3 V) | GPIO 42 | Minus an GND |
-
-## Bitte rücksichtsvoll senden
-
-Jede Nachricht kostet Airtime auf allen Repeatern im Pfad, und ohne bekannten Pfad geht sie per Flood durchs ganze Netz. Cooldown und Stundenbudget daher bitte nicht entfernen, keine Meldungen in Public-Kanäle umleiten und neue Nodes in der lokalen Community ankündigen.
-
-## Status
-
-Geschrieben gegen MeshCore `main` 81dbae5 (v1.18.0, 15.10.2026). Der Code ist noch nicht auf Hardware getestet. Rückmeldungen und Pull Requests sind willkommen.
+Jedes Beispiel muss die Spielregeln oben einhalten. Pull Requests und Issues sind willkommen, ebenso Rückmeldungen, ob ein Beispiel auf echter Hardware läuft.
 
 ## Lizenz
 
-MIT, siehe [LICENSE](LICENSE). `firmware/main.cpp` basiert auf dem MeshCore-Beispiel `simple_sensor` (MIT, Scott Powell / rippleradios.com).
+MIT, siehe [LICENSE](LICENSE). Die Firmware-Dateien basieren auf MeshCore (MIT, Scott Powell / rippleradios.com).
