@@ -52,3 +52,52 @@ jobs:
       - run: pip install platformio
       - name: Alle Beispiele bauen
         run: scripts/build_examples.sh ../MeshCore ${{ matrix.target }}
+
+  web:
+    name: Web-Simulation (WebAssembly)
+    runs-on: ubuntu-latest
+    env:
+      EMSDK_VERSION: 4.0.10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: MeshCore holen
+        run: |
+          git clone https://github.com/meshcore-dev/MeshCore.git ../MeshCore
+          git -C ../MeshCore checkout "$MESHCORE_REF"
+      - name: Bibliotheken laden (Crypto, CayenneLPP)
+        run: |
+          pip install platformio
+          cd ../MeshCore && pio pkg install -e Heltec_v3_sensor
+      - name: Emscripten installieren
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git ../emsdk
+          ../emsdk/emsdk install "$EMSDK_VERSION"
+          ../emsdk/emsdk activate "$EMSDK_VERSION"
+      - name: Nach WebAssembly bauen (4 Beispiele x 3 Boards)
+        run: |
+          source ../emsdk/emsdk_env.sh
+          make -C sim -j4 CXX=em++ CC=emcc BUILD=build-web MESHCORE="$PWD/../MeshCore" web
+      - name: Alle Kombinationen in Node pruefen
+        run: node sim/web/test_web.cjs sim/build-web/site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sim/build-web/site
+
+  pages:
+    name: Veroeffentlichen (GitHub Pages)
+    needs: web
+    # Nur auf main und nur, wenn Pages im Repo eingeschaltet ist (Variable PAGES_ENABLED=true)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.PAGES_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
