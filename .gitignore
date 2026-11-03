@@ -2,3 +2,4 @@
 .vscode/
 *.bin
 sim/build/
+sim/build-web/

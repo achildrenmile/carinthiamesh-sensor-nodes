@@ -41,7 +41,7 @@ $(BUILD)/lib/%.c.o: ;
 ED_OBJ := $(patsubst %,$(BUILD)/lib/%.o,$(notdir $(ED_SRC)))
 $(BUILD)/lib/%.c.o:
 	@mkdir -p $(BUILD)/lib
-	gcc -O1 -w -I$(MESHCORE)/lib/ed25519 -c $(filter %/$*.c,$(ED_SRC)) -o $@
+	$(CC) -O1 -w -I$(MESHCORE)/lib/ed25519 -c $(filter %/$*.c,$(ED_SRC)) -o $@
 
 TESTS := $(wildcard tests/scenario_*.cpp)
 define EXRULE
@@ -51,3 +51,20 @@ $$(BUILD)/$(1)/sim_test: $$(BUILD)/$(1)/app.h $$(LIBOBJ) $$(ED_OBJ) $$(TESTS) $$
 	$$(CXX) $$(CXXFLAGS) $$(INC) -I$$(BUILD)/$(1) $$(DEFS) -DEXAMPLE_$(subst -,_,$(1))=1 -Itests $$(TESTS) tests/main.cpp $$(LIBOBJ) $$(ED_OBJ) -o $$@
 endef
 $(foreach e,$(EXAMPLES),$(eval $(call EXRULE,$(e))))
+
+# ---- Web-Version (WebAssembly): make CXX=em++ CC=emcc BUILD=build-web web  (emsdk muss aktiv sein)
+WEB_BOARDS := Heltec_v3_sensor RAK_4631_sensor Xiao_nrf52_sensor
+WEB_OUT    ?= $(BUILD)/site/wasm
+WEB_FLAGS  := -std=c++17 -O2 -w -fpermissive -include stdint.h -include vector
+WEB_LINK   := -sMODULARIZE=1 -sEXPORT_NAME=createSim -sSINGLE_FILE=1 -sALLOW_MEMORY_GROWTH=1 -sENVIRONMENT=web,node \
+              -sEXPORTED_FUNCTIONS=_malloc,_free -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,UTF8ToString
+.PHONY: web
+web: $(foreach e,$(EXAMPLES),$(foreach b,$(WEB_BOARDS),$(WEB_OUT)/$(e)-$(b).js))
+	cp web/index.html web/pins.json $(BUILD)/site/
+define WEBRULE
+$$(WEB_OUT)/$(1)-$(2).js: $$(BUILD)/$(1)/app.h $$(LIBOBJ) $$(ED_OBJ) web/web_api.cpp web/boards.h $$(wildcard src/*.h)
+	@mkdir -p $$(WEB_OUT)
+	$$(CXX) $$(WEB_FLAGS) $$(INC) -I$$(BUILD)/$(1) $$(DEFS) $$(shell ../scripts/pin_flags.sh $(2) $(1)) -include web/boards.h \
+	  web/web_api.cpp $$(LIBOBJ) $$(ED_OBJ) $$(WEB_LINK) -o $$@
+endef
+$(foreach e,$(EXAMPLES),$(foreach b,$(WEB_BOARDS),$(eval $(call WEBRULE,$(e),$(b)))))

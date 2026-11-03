@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CarinthiaMesh Sensor-Simulator</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c2330;--mute:#5d6778;--line:#d9dee7;--acc:#0b6bcb;--ok:#18864b;--bad:#c0392b;--warn:#b9770e;--wire:#8a94a6;--pcb:#1f6f55;--pcbt:#e8fff6}
+@media (prefers-color-scheme:dark){:root{--bg:#12161d;--card:#1b212b;--ink:#e6e9ef;--mute:#9aa4b5;--line:#2c3543;--acc:#5aa9ff;--ok:#43c981;--bad:#ff7b6b;--warn:#e5ab4b;--wire:#6d778a;--pcb:#18523f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:14px 16px 6px;max-width:1200px;margin:0 auto}
+h1{font-size:20px;margin:0 0 2px}
+header p{margin:0;color:var(--mute);font-size:13px}
+main{max-width:1200px;margin:0 auto;padding:8px 16px 32px;display:grid;gap:12px;grid-template-columns:1fr 1fr}
+@media (max-width:860px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card h2{font-size:14px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+.wide{grid-column:1/-1}
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+label{font-size:13px;color:var(--mute);display:flex;gap:6px;align-items:center}
+select,input[type=text],button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 9px}
+button{cursor:pointer}button:hover{border-color:var(--acc)}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+input[type=range]{accent-color:var(--acc)}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--ink);font:12px system-ui,sans-serif}
+.mute{color:var(--mute)}
+.pcb{fill:var(--pcb)}.pcbt{fill:var(--pcbt)!important}
+.part{fill:var(--bg);stroke:var(--wire);stroke-width:1.5}
+.wire{stroke:var(--wire);stroke-width:2;fill:none}
+.hit{cursor:pointer}
+.phone{display:flex;flex-direction:column;gap:8px}
+.status{font-size:13px}
+.status b.ok{color:var(--ok)}.status b.bad{color:var(--bad)}
+#msgs{min-height:120px;max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:6px}
+.msg{background:var(--bg);border:1px solid var(--line);border-radius:12px 12px 12px 3px;padding:6px 10px;max-width:92%}
+.msg small{display:block;color:var(--mute);font-size:11px}
+.msg.reply{border-radius:12px 12px 3px 12px;align-self:flex-end;color:var(--acc)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:3px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mute);font-weight:600}
+#logbox{max-height:240px;overflow:auto}
+.lost{color:var(--bad)}.okc{color:var(--ok)}
+.hints{margin:0;padding-left:18px}.hints li{margin:2px 0}
+.stats{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin-bottom:6px}
+.stats span b{font-variant-numeric:tabular-nums}
+.note{font-size:12.5px;color:var(--mute)}
+a{color:var(--acc)}
+.mesh text{font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>CarinthiaMesh Sensor-Simulator</h1>
+  <p>Die echte Firmware-Klasse und der MeshCore-Kern laufen hier im Browser (WebAssembly). Funk, Sensorik und Handy sind simuliert.</p>
+</header>
+<main>
+  <section class="card wide">
+    <div class="bar">
+      <label>Beispiel
+        <select id="ex">
+          <option value="door-sensor">Türsensor</option>
+          <option value="leak-sensor">Wassersensor</option>
+          <option value="climate-sensor">Klimasensor</option>
+          <option value="button-sensor">Tasterfeld</option>
+        </select></label>
+      <label>Board
+        <select id="board">
+          <option value="Heltec_v3_sensor">Heltec WiFi LoRa 32 V3</option>
+          <option value="RAK_4631_sensor">RAK4631 (WisBlock)</option>
+          <option value="Xiao_nrf52_sensor">Seeed XIAO nRF52840</option>
+        </select></label>
+      <label><input type="checkbox" id="rep"> über Repeater</label>
+      <label>Paketverlust <input type="range" id="loss" min="0" max="80" value="0" step="5"> <span id="lossv">0 %</span></label>
+      <button id="restart">Neu starten</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Aufbau</h2>
+    <div id="rig"></div>
+    <div class="bar" style="margin-top:8px">
+      <label>Batterie <input type="range" id="batt" min="3000" max="4200" value="4000" step="50"> <span id="battv">4000 mV</span></label>
+    </div>
+    <div id="extra" style="margin-top:6px"></div>
+  </section>
+
+  <section class="card phone">
+    <h2>Handy (MeshCore-App, simuliert)</h2>
+    <div class="status" id="phonestat"></div>
+    <div class="bar">
+      <button id="login" class="primary">Am Sensor anmelden</button>
+      <label><input type="checkbox" id="autoack" checked> Handy bestätigt Nachrichten (ACK)</label>
+    </div>
+    <div id="msgs"></div>
+    <form id="cmdform" class="bar"><input type="text" id="cmd" placeholder="Admin-Befehl, z. B. status" style="flex:1;min-width:140px"><button>Senden</button></form>
+    <div class="note">Der Sensor meldet sich erst nach der Anmeldung (Passwort <code>password</code>) beim Handy. So ist es auch mit der echten App.</div>
+  </section>
+
+  <section class="card wide">
+    <div class="bar">
+      <label>Zeit
+        <select id="speed">
+          <option value="0">Pause</option><option value="1">×1 (Echtzeit)</option>
+          <option value="10" selected>×10</option><option value="60">×60</option><option value="300">×300</option>
+        </select></label>
+      <button data-skip="60000">+1 Minute</button><button data-skip="600000">+10 Minuten</button>
+      <span class="mute">Simulierte Zeit: <b id="clock">0:00</b></span>
+    </div>
+    <ul class="hints" id="hints" style="margin-top:8px"></ul>
+  </section>
+
+  <section class="card">
+    <h2>Mesh</h2>
+    <div id="mesh"></div>
+    <div class="stats">
+      <span>Pakete: <b id="npk">0</b></span><span>davon verloren: <b id="nlost">0</b></span>
+      <span>Sendezeit Sensor: <b id="air">0 s</b></span><span>Sendeanteil: <b id="duty">0 %</b></span>
+    </div>
+    <div class="note">Sendeanteil = Anteil der Zeit, in der der Sensor funkt (Duty-Cycle-Grenze im EU-868-Band: 1 % bzw. 10 % je nach Unterband).</div>
+  </section>
+
+  <section class="card">
+    <h2>Funkpakete</h2>
+    <div id="logbox"><table><thead><tr><th>Zeit</th><th>Von</th><th>An</th><th>Typ</th><th>Byte</th><th></th></tr></thead><tbody id="log"></tbody></table></div>
+  </section>
+
+  <section class="card wide note">
+    <b>Echt:</b> die Firmware-Klasse aus <code>examples/*/firmware/main.cpp</code> (unverändert), der MeshCore-Kern mit Verschlüsselung, Anmeldung, Alerts, ACK und Wiederholungen, die Pin-Belegung des gewählten Boards.
+    <b>Simuliert:</b> das Funkmedium (LoRa-Sendezeit nach Formel, Verlust, Kollisionen), das Handy (nach dem Verhalten von <code>BaseChatMesh</code>, nicht die echte App), der Repeater und die Sensoren.
+    <b>Nicht geprüft:</b> Verdrahtung, Pegel, Reichweite, Stromverbrauch. Dafür braucht es die echte Hardware.
+    <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/sim/README.md">Mehr zur Simulation</a>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let BOARDS = {};
+const HINTS = {
+  'door-sensor': ['Auf „Am Sensor anmelden“ klicken und kurz warten, bis „angemeldet“ erscheint.','Den Reed-Kontakt anklicken (Tür öffnen): nach der Entprellung kommt „Tuer offen“.','Sofort wieder schließen: die zweite Meldung wartet den Cooldown von 60 s ab.','Mit „status“ den Zustand abfragen, ohne dass ein Alert entsteht.','Batterie unter 3600 mV ziehen: „Battery is low“.'],
+  'leak-sensor': ['Anmelden, dann „Wasser anlegen“: High-Priority-Alert „Wasser erkannt!“.','Handy-ACK ausschalten und zusehen: der Sensor wiederholt, bis eine Bestätigung kommt.','Paketverlust auf 40 % stellen und prüfen, ob der Alarm trotzdem ankommt.','Die erste Meldung kann doppelt ankommen: bekanntes Verhalten von MeshCore bei High-Priority-Alerts (siehe sim/README.md).','„status“ fragt den Zustand ab.'],
+  'climate-sensor': ['BME280 anschließen, anmelden, dann Temperatur unter 2 °C ziehen: „Frostgefahr“.','Zwischen 2 und 4 °C bleibt der Alarm aktiv (Hysterese), erst über 4 °C wird er zurückgesetzt.','Feuchte über 70 % ziehen: „Luftfeuchte hoch“, Rücksetzen unter 65 %.','Ohne BME280 passiert nichts.'],
+  'button-sensor': ['Anmelden, dann einen der vier Taster drücken: LED und Buzzer geben sofort Rückmeldung, der Alert folgt.','Mit „led on“, „led off“ und „beep“ vom Handy aus schalten.','Taster 1 mehrfach schnell drücken: Cooldown und Stundenbudget begrenzen die Nachrichten.']
+};
+let M = null, speed = 10, acc = 0, last = 0, sent = 0, lost = 0, touched = 0, gen = 0;
+let pins = {};   // Logische Rollen -> Pin
+const fn = {};
+
+function fmt(ms){const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Konnte '+src+' nicht laden'));document.head.appendChild(s);})}
+
+async function start(){
+  const my = ++gen; M = null;
+  if (!Object.keys(BOARDS).length) BOARDS = await (await fetch('pins.json')).json();
+  const ex = $('ex').value, bd = $('board').value, B = BOARDS[bd];
+  B.lab = n => B.labels[n] || (B.prefix + n);
+  pins = {door:B.door, leak:B.leak, btn:B.btn, led:B.led, buz:B.buz, wet:B.wet};
+  $('msgs').innerHTML=''; $('log').innerHTML=''; sent=0; lost=0; acc=0; touched=0;
+  $('npk').textContent=0; $('nlost').textContent=0;
+  if (!window.createSim || window.__simKey !== ex+bd){
+    window.createSim = undefined;
+    try { await loadScript(`wasm/${ex}-${bd}.js`); } catch(e){ $('phonestat').textContent=e.message; return; }
+    window.__simKey = ex+bd;
+  }
+  M = await window.createSim();
+  if (my !== gen) return;
+  for (const n of ['sim_start:null:number,number','sim_run:null:number','sim_login:null:','sim_command:null:string','sim_auto_ack:null:number','sim_pin_set:null:number,number','sim_pin_release:null:number','sim_pin_out:number:number','sim_env:null:number,number,number,number','sim_battery:null:number','sim_now:number:'])
+  { const [name,ret,args]=n.split(':'); fn[name]=M.cwrap(name, ret==='null'?null:ret, args?args.split(','):[]); }
+  buildRig(ex, bd, B);
+  $('hints').innerHTML = HINTS[ex].map(h=>`<li>${h}</li>`).join('');
+  initInputs(ex);
+  fn.sim_battery(+$('batt').value);
+  fn.sim_start($('rep').checked?1:0, +$('loss').value);
+  fn.sim_auto_ack($('autoack').checked?1:0);
+  applyInputs(ex);
+  drawMesh(); poll();
+  $('cmd').placeholder = ex==='button-sensor' ? 'z. B. led on, led off, beep' : 'z. B. status';
+}
+
+/* ---------- Aufbau (SVG) ---------- */
+const state = {door:false, wet:false, press:[false,false,false,false], bme:false, t:20, rh:50, p:1013};
+function pinRow(y, role, label){return `<text x="16" y="${y+4}" class="pcbt">${role}</text><text x="170" y="${y+4}" text-anchor="end" class="pcbt">${label}</text><circle cx="180" cy="${y}" r="4" fill="#d9b44a"/>`}
+function buildRig(ex, bd, B){
+  const L = B.lab; let rows='', parts='', h=210;
+  if (ex==='door-sensor'){
+    rows = pinRow(60,'Reed-Kontakt',L(pins.door)) + pinRow(100,'GND','GND');
+    parts = `<path class="wire" d="M180 60 H270 V80"/><path class="wire" d="M180 100 H250 V120 H270"/>
+      <g id="door" class="hit"><rect x="250" y="70" width="130" height="64" rx="8" class="part"/><text x="262" y="92">Reed-Kontakt</text>
+      <line id="reedarm" x1="270" y1="118" x2="350" y2="118" stroke="var(--ink)" stroke-width="4"/><text id="doortxt" x="262" y="152"></text></g>`;
+  } else if (ex==='leak-sensor'){
+    rows = pinRow(50,'DO',L(pins.leak)) + pinRow(80,'VCC','3V3') + pinRow(110,'GND','GND');
+    parts = `<path class="wire" d="M180 50 H260"/><path class="wire" d="M180 80 H260"/><path class="wire" d="M180 110 H260"/>
+      <g id="leak" class="hit"><rect x="260" y="30" width="130" height="100" rx="8" class="part"/><text x="272" y="52">Wassersensor</text>
+      <path id="drop" d="M325 70 q-14 22 0 32 q14 -10 0 -32z" fill="var(--wire)"/><text id="leaktxt" x="272" y="122"></text></g>`;
+  } else if (ex==='climate-sensor'){
+    rows = pinRow(60,'SDA/SCL','I²C') + pinRow(100,'VCC','3V3') + pinRow(135,'GND','GND');
+    parts = `<path class="wire" d="M180 60 H260"/><path class="wire" d="M180 100 H260"/><path class="wire" d="M180 135 H260"/>
+      <rect x="260" y="40" width="130" height="110" rx="8" class="part" id="bmebox"/><text x="272" y="64">BME280</text>
+      <text id="bmeval" x="272" y="92"></text><text id="bmeval2" x="272" y="112"></text><text id="bmeval3" x="272" y="132"></text>`;
+    h=220;
+  } else {
+    rows = [0,1,2,3].map(i=>pinRow(30+i*28,'Taster '+(i+1),L(pins.btn[i]))).join('') + pinRow(150,'LED',L(pins.led)) + pinRow(180,'Buzzer',L(pins.buz));
+    parts = [0,1,2,3].map(i=>`<path class="wire" d="M180 ${30+i*28} H250"/><g class="hit btn" data-i="${i}"><circle id="b${i}" cx="268" cy="${30+i*28}" r="11" class="part"/><text x="288" y="${34+i*28}">Taster ${i+1}</text></g>`).join('')
+      + `<path class="wire" d="M180 150 H250"/><circle id="led" cx="268" cy="150" r="11" class="part"/><text x="288" y="154">LED</text>
+         <path class="wire" d="M180 180 H250"/><g id="buzg"><rect x="257" y="169" width="22" height="22" rx="4" class="part" id="buz"/></g><text x="288" y="184" id="buztxt">Buzzer</text>`;
+    h=240;
+  }
+  $('rig').innerHTML = `<svg viewBox="0 0 420 ${h}" role="img" aria-label="Aufbau"><rect x="4" y="4" width="190" height="${h-8}" rx="10" class="pcb"/>
+    <text x="16" y="${h-14}" class="pcbt" style="font-weight:600">${B.name}</text>${rows}${parts}</svg>`;
+  const sv = $('rig');
+  if (ex==='door-sensor') $('door').onclick = ()=>{state.door=!state.door; applyInputs(ex)};
+  if (ex==='leak-sensor') $('leak').onclick = ()=>{state.wet=!state.wet; applyInputs(ex)};
+  if (ex==='button-sensor') sv.querySelectorAll('.btn').forEach(g=>{
+    const i=+g.dataset.i;
+    g.addEventListener('pointerdown',e=>{e.preventDefault();state.press[i]=true;applyInputs(ex)});
+    ['pointerup','pointerleave','pointercancel'].forEach(t=>g.addEventListener(t,()=>{if(state.press[i]){state.press[i]=false;applyInputs(ex)}}));
+  });
+}
+function initInputs(ex){
+  const x = $('extra'); x.innerHTML='';
+  if (ex==='climate-sensor'){
+    x.innerHTML = `<div class="bar"><label><input type="checkbox" id="bme"> BME280 angeschlossen</label></div>
+      <div class="bar"><label>Temperatur <input type="range" id="t" min="-15" max="40" step="0.5" value="${state.t}"> <b id="tv"></b></label></div>
+      <div class="bar"><label>Luftfeuchte <input type="range" id="rh" min="10" max="95" step="1" value="${state.rh}"> <b id="rhv"></b></label></div>
+      <div class="bar"><label>Luftdruck <input type="range" id="p" min="950" max="1050" step="1" value="${state.p}"> <b id="pv"></b></label></div>`;
+    ['bme','t','rh','p'].forEach(id=>$(id).oninput=()=>{state.bme=$('bme').checked;state.t=+$('t').value;state.rh=+$('rh').value;state.p=+$('p').value;applyInputs(ex)});
+    $('bme').checked = state.bme;
+  } else if (ex==='door-sensor') {
+    x.innerHTML = `<div class="note">Klick auf den Reed-Kontakt öffnet oder schließt die Tür. Geschlossen zieht der Kontakt den Pin auf GND (interner Pull-up).</div>`;
+  } else if (ex==='leak-sensor') {
+    x.innerHTML = `<div class="note">Klick auf den Wassersensor legt Wasser an oder nimmt es weg. Das Modul treibt den Pegel selbst (nass = ${pins.wet?'HIGH':'LOW'} auf diesem Board).</div>`;
+  } else {
+    x.innerHTML = `<div class="note">Taster gedrückt halten, loslassen. Pull-up intern, gedrückt = GND.</div>`;
+  }
+}
+function applyInputs(ex){
+  if (!M) return;
+  if (ex==='door-sensor'){
+    if (state.door) fn.sim_pin_release(pins.door); else fn.sim_pin_set(pins.door, 0);   // zu = LOW, offen = Pull-up (HIGH)
+    $('reedarm').setAttribute('x2', state.door ? 330 : 350); $('reedarm').setAttribute('y2', state.door ? 90 : 118);
+    $('doortxt').textContent = state.door ? 'Tür offen' : 'Tür geschlossen';
+  } else if (ex==='leak-sensor'){
+    fn.sim_pin_set(pins.leak, state.wet ? pins.wet : 1-pins.wet);
+    $('drop').setAttribute('fill', state.wet ? 'var(--acc)' : 'var(--wire)');
+    $('leaktxt').textContent = state.wet ? 'nass' : 'trocken';
+  } else if (ex==='climate-sensor'){
+    fn.sim_env(state.bme?1:0, state.t, state.rh, state.p);
+    $('tv').textContent=state.t.toFixed(1)+' °C'; $('rhv').textContent=state.rh+' %'; $('pv').textContent=state.p+' hPa';
+    $('bmeval').textContent = state.bme ? state.t.toFixed(1)+' °C' : 'nicht verbunden';
+    $('bmeval2').textContent = state.bme ? state.rh+' % rF' : ''; $('bmeval3').textContent = state.bme ? state.p+' hPa' : '';
+  } else {
+    state.press.forEach((p,i)=>{ if (p) fn.sim_pin_set(pins.btn[i],0); else fn.sim_pin_release(pins.btn[i]); $('b'+i).setAttribute('fill', p?'var(--acc)':'var(--bg)'); });
+  }
+}
+
+/* ---------- Mesh-Bild ---------- */
+function drawMesh(){
+  const rep = $('rep').checked, x = rep ? [50,230,410] : [70,0,390];
+  $('mesh').innerHTML = `<svg class="mesh" viewBox="0 0 460 110"><line id="l1" class="wire" x1="${x[0]+30}" y1="45" x2="${rep?x[1]-30:x[2]-30}" y2="45" stroke-dasharray="5 4"/>
+    ${rep?`<line id="l2" class="wire" x1="${x[1]+30}" y1="45" x2="${x[2]-30}" y2="45" stroke-dasharray="5 4"/>`:''}
+    <circle cx="${x[0]}" cy="45" r="26" class="part"/><text x="${x[0]}" y="49" text-anchor="middle">Sensor</text>
+    ${rep?`<circle cx="${x[1]}" cy="45" r="26" class="part"/><text x="${x[1]}" y="49" text-anchor="middle">Repeater</text>`:''}
+    <circle cx="${x[2]}" cy="45" r="26" class="part"/><text x="${x[2]}" y="49" text-anchor="middle">Handy</text>
+    <text id="meshtxt" x="230" y="100" text-anchor="middle" class="mute"></text></svg>`;
+}
+function flash(p){
+  const rep = $('rep').checked;
+  const link = (p.from==='sensor'||(p.from==='Repeater'&&p.to==='sensor')||(p.to==='sensor')) ? 'l1' : (rep?'l2':'l1');
+  const el=$(link); if(!el) return;
+  el.style.stroke = p.ok ? 'var(--ok)' : 'var(--bad)'; el.style.strokeWidth=4;
+  setTimeout(()=>{el.style.stroke='';el.style.strokeWidth=''},350);
+  $('meshtxt').textContent = `${p.from} → ${p.to}: ${p.type}`;
+}
+
+/* ---------- Ereignisse ---------- */
+function addMsg(text, sub, cls){
+  const d=document.createElement('div'); d.className='msg '+(cls||''); d.innerHTML=`${text.replace(/[<&]/g,c=>({'<':'&lt;','&':'&amp;'}[c]))}<small>${sub}</small>`;
+  const b=$('msgs'); b.appendChild(d); b.scrollTop=b.scrollHeight;
+}
+function poll(){
+  const e = JSON.parse(M.ccall('sim_events','string',[],[]));
+  $('clock').textContent = fmt(e.now);
+  $('phonestat').innerHTML = 'Status: ' + (e.logged_in ? '<b class="ok">angemeldet</b>' : '<b class="bad">nicht angemeldet</b>') + ` · ACKs gesendet: ${e.acks}`;
+  const tb=$('log'), shown = e.packets.filter(p=>p.type!=='ADVERT' || true);
+  shown.forEach(p=>{
+    sent++; if(!p.ok) lost++;
+    const tr=document.createElement('tr'); tr.innerHTML=`<td>${fmt(p.t)}</td><td>${p.from}</td><td>${p.to}</td><td>${p.type}</td><td>${p.len}</td><td class="${p.ok?'okc':'lost'}">${p.ok?'✓':'verloren'}</td>`;
+    tb.appendChild(tr); flash(p);
+  });
+  while (tb.children.length>300) tb.removeChild(tb.firstChild);
+  if (shown.length) $('logbox').scrollTop=1e9;
+  $('npk').textContent=sent; $('nlost').textContent=lost;
+  e.messages.forEach(m=>addMsg(m.text, 'Alert · '+fmt(m.t)));
+  e.replies.forEach(r=>addMsg(r, 'Antwort des Sensors','reply'));
+  $('air').textContent=(e.airtime_ms/1000).toFixed(1)+' s';
+  $('duty').textContent=e.now>0?(100*e.airtime_ms/e.now).toFixed(2)+' %':'0 %';
+  // Ausgaenge (LED/Buzzer)
+  if ($('ex').value==='button-sensor'){
+    const l=fn.sim_pin_out(pins.led), b=fn.sim_pin_out(pins.buz);
+    $('led').setAttribute('fill', l?'#ffd23f':'var(--bg)'); $('buz').setAttribute('fill', b?'var(--warn)':'var(--bg)'); $('buztxt').textContent=b?'Buzzer (piept)':'Buzzer';
+  }
+}
+function frame(t){
+  if (M && speed>0){
+    const dt = Math.min(100, t-last); acc += dt*speed;
+    const ms = Math.floor(acc); acc -= ms;
+    if (ms>0){ fn.sim_run(Math.min(ms, 60000)); }
+  }
+  last=t;
+  if (M) poll();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Steuerung ---------- */
+$('ex').onchange=$('board').onchange=$('restart').onclick=()=>{state.door=false;state.wet=false;state.press=[false,false,false,false];start()};
+$('rep').onchange=$('loss').onchange=()=>{$('lossv').textContent=$('loss').value+' %';start()};
+$('loss').oninput=()=>$('lossv').textContent=$('loss').value+' %';
+$('speed').onchange=()=>speed=+$('speed').value;
+$('batt').oninput=()=>{$('battv').textContent=$('batt').value+' mV'; if(M) fn.sim_battery(+$('batt').value)};
+$('autoack').onchange=()=>fn.sim_auto_ack($('autoack').checked?1:0);
+$('login').onclick=()=>{fn.sim_login(); if(speed===0){$('speed').value='10';speed=10}};
+$('cmdform').onsubmit=ev=>{ev.preventDefault(); const c=$('cmd').value.trim(); if(!c||!M) return; addMsg(c,'Befehl an den Sensor','reply'); fn.sim_command(c); $('cmd').value=''; if(speed===0){$('speed').value='10';speed=10}};
+document.querySelectorAll('[data-skip]').forEach(b=>b.onclick=()=>{ if(M){ const total=+b.dataset.skip; for(let d=0; d<total; d+=5000){ fn.sim_run(Math.min(5000,total-d)); poll(); } } });
+const q = new URLSearchParams(location.search);
+if (q.get('ex')) $('ex').value=q.get('ex'); if (q.get('board')) $('board').value=q.get('board');
+start(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>

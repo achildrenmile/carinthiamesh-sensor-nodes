@@ -6,6 +6,7 @@
 #include <deque>
 #include <vector>
 #include <map>
+#include <string>
 
 namespace sim {
 
@@ -16,6 +17,10 @@ public:
   struct Tx { SimRadio* from; uint32_t start, end; std::vector<uint8_t> bytes; bool done = false; };
   std::vector<SimRadio*> radios;
   std::deque<Tx> txs;
+  // Ereignisprotokoll fuer die Web-Oberflaeche (aus, solange nicht eingeschaltet)
+  struct Event { uint32_t t_start, t_end; std::string from, to; int len; uint8_t header; bool delivered; };
+  bool record_events = false;
+  std::vector<Event> events;
   uint64_t total_airtime_ms = 0;     // Summe aller Sendezeiten im Netz
   uint32_t total_packets = 0;
   uint32_t rng_state = 12345;
@@ -116,6 +121,7 @@ inline void Medium::step(uint32_t now) {
         else if (hears(r, o.from)) lost = true;             // Kollision zweier hoerbarer Sender
       }
       if (!lost) r->rx.push_back(t.bytes);
+      if (record_events) events.push_back({t.start, t.end, t.from->name, r->name, (int)t.bytes.size(), t.bytes.empty() ? (uint8_t)0 : t.bytes[0], !lost});
     }
   }
   while (!txs.empty() && txs.front().done && txs.front().end + 120000 < now) txs.pop_front();   // 2 min Verlauf reicht

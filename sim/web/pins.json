@@ -1,0 +1,5 @@
+{
+  "Heltec_v3_sensor":  {"name": "Heltec V3",     "prefix": "GPIO ", "labels": {}, "door": 4,  "leak": 5,  "wet": 0, "btn": [4, 5, 6, 7],    "led": 41, "buz": 42, "i2c": "GPIO 33 (SDA), GPIO 34 (SCL)"},
+  "RAK_4631_sensor":   {"name": "RAK4631",       "prefix": "P",    "labels": {"17": "WB_IO1", "34": "WB_IO2", "21": "WB_IO3", "4": "WB_IO4", "9": "WB_IO5", "10": "WB_IO6"}, "door": 17, "leak": 17, "wet": 1, "btn": [17, 34, 21, 4], "led": 9, "buz": 10, "i2c": "I²C-Buchse des WisBlock Base Boards"},
+  "Xiao_nrf52_sensor": {"name": "XIAO nRF52840", "prefix": "D",    "labels": {}, "door": 0,  "leak": 0,  "wet": 0, "btn": [0, 8, 9, 10],   "led": 6,  "buz": 7,  "i2c": "D7 (SDA), D6 (SCL)"}
+}

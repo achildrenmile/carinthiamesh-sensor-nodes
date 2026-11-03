@@ -50,6 +50,22 @@ Ein grüner Lauf heißt: Die Logik tut, was sie soll. Ob der Aufbau funktioniert
 
 Jeder Testfall läuft in einem eigenen Prozess, damit die globalen Zustände sauber getrennt sind.
 
+## Im Browser (WebAssembly)
+
+Dieselbe Simulation läuft als Webseite: virtueller Aufbau (Taster, Reed-Kontakt, Wassersensor, BME280-Regler, LED, Buzzer), simuliertes Handy mit Anmeldung, Alerts und Befehlen, Mesh-Bild mit Funkprotokoll und Zeitraffer. Beispiel und Board (Heltec V3, RAK4631, XIAO nRF52840) sind wählbar, optional mit Repeater und Paketverlust. Pro Beispiel und Board entsteht ein eigener Build mit denselben Pin-Flags wie in `scripts/build_examples.sh` (gemeinsam in `scripts/pin_flags.sh`), die Pin-Beschriftung stammt aus `web/pins.json`.
+
+```bash
+git clone --depth 1 https://github.com/emscripten-core/emsdk.git && emsdk/emsdk install 4.0.10 && emsdk/emsdk activate 4.0.10
+source emsdk/emsdk_env.sh
+make -C sim -j4 CXX=em++ CC=emcc BUILD=build-web MESHCORE=$PWD/MeshCore web     # MeshCore wie oben vorbereiten
+node sim/web/test_web.cjs sim/build-web/site                                    # 12 Kombinationen prüfen
+python3 -m http.server -d sim/build-web/site 8000                               # dann http://localhost:8000
+```
+
+Die Schnittstelle zwischen Seite und Simulation steht in `web/web_api.cpp`. Die CI baut die Seite bei jedem PR und prüft die 12 Kombinationen in Node. Veröffentlicht wird sie auf GitHub Pages, sobald dort die Quelle „GitHub Actions“ gewählt und die Repository-Variable `PAGES_ENABLED=true` gesetzt ist.
+
+Grenzen wie oben: Das ist dieselbe Logik-Simulation, nur mit Oberfläche. Die Pins sind logische Pins der Firmware, elektrische Eigenschaften (Pegel, Prellen des echten Kontakts, Funkreichweite) bildet sie nicht ab.
+
 ## Befunde
 
 Beim Aufbau der Simulation sind zwei Dinge in MeshCore (Stand 81dbae5) aufgefallen. Beide sind bisher nur in der Simulation gesehen, nicht auf Hardware.
