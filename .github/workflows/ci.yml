@@ -82,6 +82,8 @@ jobs:
           make -C sim -j4 CXX=em++ CC=emcc BUILD=build-web MESHCORE="$PWD/../MeshCore" web
       - name: Alle Kombinationen in Node pruefen
         run: node sim/web/test_web.cjs sim/build-web/site
+      - name: Seite im Browser bedienen (anmelden, Tuer oeffnen, Alert pruefen)
+        run: CHROME=google-chrome node sim/web/test_ui.mjs sim/build-web/site
       - uses: actions/upload-pages-artifact@v3
         with:
           path: sim/build-web/site
