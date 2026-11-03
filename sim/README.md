@@ -54,7 +54,7 @@ Jeder Testfall läuft in einem eigenen Prozess, damit die globalen Zustände sau
 
 Online: https://achildrenmile.github.io/carinthiamesh-sensor-nodes/ (wird bei jedem Merge auf `main` neu gebaut). Eine Hilfe für Nutzer (Bedienung, Begriffe, Fehlersuche) steckt auf der Seite selbst unter „Hilfe“ und funktioniert auch offline.
 
-**Lokal ohne Installation:** `carinthiamesh-simulator.zip` aus dem Release `simulator-v0.2.0` laden, entpacken und `index.html` im Browser öffnen. Das geht auch offline.
+**Lokal ohne Installation:** `carinthiamesh-simulator.zip` aus dem Release `simulator-v0.3.0` laden, entpacken und `index.html` im Browser öffnen. Das geht auch offline.
 
 **Was geladen wird:** pro Beispiel und Board eine Datei `wasm/<beispiel>-<board>.js` (rund 400 KB, WebAssembly eingebettet). Sie enthält den übersetzten Beispielcode und den MeshCore-Kern. Es ist **kein** Firmware-Binary (`.bin`/`.uf2`) und lässt sich nicht flashen; die echte Firmware baut man wie im Getting Started mit PlatformIO. `build-info.json` nennt MeshCore-Stand und Emscripten-Version.
 
