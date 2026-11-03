@@ -46,6 +46,15 @@ th{color:var(--mute);font-weight:600}
 .stats{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin-bottom:6px}
 .stats span b{font-variant-numeric:tabular-nums}
 .note{font-size:12.5px;color:var(--mute)}
+.about{grid-column:1/-1;border-left:5px solid var(--acc)}
+.about p{margin:0 0 8px}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media (max-width:860px){.chips{grid-template-columns:1fr}}
+.chip{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--bg)}
+.chip b{display:block;margin-bottom:2px}
+.chip.y b{color:var(--ok)}.chip.n b{color:var(--warn)}.chip.x b{color:var(--bad)}
+.tag{font-size:11px;font-weight:600;border:1px solid var(--line);border-radius:99px;padding:1px 8px;margin-left:8px;text-transform:none;letter-spacing:0;color:var(--mute)}
+.run{grid-column:1/-1}.run .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media (max-width:860px){.run .cols{grid-template-columns:1fr}}.run h3{font-size:13px;margin:0 0 6px}.run ul,.run ol{margin:0;padding-left:18px}.run li{margin:3px 0}code{font-size:12.5px}
 a{color:var(--acc)}
 .mesh text{font-size:12px}
 </style>
@@ -53,9 +62,18 @@ a{color:var(--acc)}
 <body>
 <header>
   <h1>CarinthiaMesh Sensor-Simulator</h1>
-  <p>Die echte Firmware-Klasse und der MeshCore-Kern laufen hier im Browser (WebAssembly). Funk, Sensorik und Handy sind simuliert.</p>
+  <p>Sensor-Beispiele für MeshCore am virtuellen Aufbau ausprobieren, bevor etwas gelötet wird.</p>
 </header>
 <main>
+  <section class="card about">
+    <p><b>Das ist eine Simulation, keine Animation.</b> Hinter jedem Klick läuft der Programmcode des gewählten Beispiels (<a id="srclink" href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/tree/main/examples">main.cpp</a>) zusammen mit dem MeshCore-Kern, für den Browser übersetzt. Es ist aber <b>nicht die fertige Firmware auf einem Chip</b>: Ob Verdrahtung, Treiber und Funk auf deinem Board klappen, zeigt nur ein Test mit echter Hardware.</p>
+    <div class="chips">
+      <div class="chip y"><b>Echt: die Programmlogik</b>Entprellen, Cooldown, Alerts, Anmeldung, Verschlüsselung, Wiederholung bis zur Bestätigung. Derselbe Quellcode wie in der Firmware (MeshCore 81dbae5).</div>
+      <div class="chip n"><b>Nachgebaut: die Umgebung</b>Funkstrecke, Repeater, Handy-App, Taster, Kontakte und Sensorwerte. Das Handy verhält sich wie MeshCore, ist aber nicht die echte App.</div>
+      <div class="chip x"><b>Nicht geprüft: die Hardware</b>Funkchip-Treiber, Sensor-Treiber, Start des Boards, Pegel, Reichweite, Stromverbrauch.</div>
+    </div>
+  </section>
+
   <section class="card wide">
     <div class="bar">
       <label>Beispiel
@@ -78,7 +96,7 @@ a{color:var(--acc)}
   </section>
 
   <section class="card">
-    <h2>Aufbau</h2>
+    <h2>Aufbau <span class="tag">virtuell</span></h2>
     <div id="rig"></div>
     <div class="bar" style="margin-top:8px">
       <label>Batterie <input type="range" id="batt" min="3000" max="4200" value="4000" step="50"> <span id="battv">4000 mV</span></label>
@@ -87,7 +105,7 @@ a{color:var(--acc)}
   </section>
 
   <section class="card phone">
-    <h2>Handy (MeshCore-App, simuliert)</h2>
+    <h2>Handy <span class="tag">nachgebaut, nicht die echte App</span></h2>
     <div class="status" id="phonestat"></div>
     <div class="bar">
       <button id="login" class="primary">Am Sensor anmelden</button>
@@ -112,7 +130,7 @@ a{color:var(--acc)}
   </section>
 
   <section class="card">
-    <h2>Mesh</h2>
+    <h2>Mesh <span class="tag">simulierter Funk</span></h2>
     <div id="mesh"></div>
     <div class="stats">
       <span>Pakete: <b id="npk">0</b></span><span>davon verloren: <b id="nlost">0</b></span>
@@ -122,18 +140,38 @@ a{color:var(--acc)}
   </section>
 
   <section class="card">
-    <h2>Funkpakete</h2>
+    <h2>Funkpakete <span class="tag">vom echten Protokoll erzeugt</span></h2>
     <div id="logbox"><table><thead><tr><th>Zeit</th><th>Von</th><th>An</th><th>Typ</th><th>Byte</th><th></th></tr></thead><tbody id="log"></tbody></table></div>
   </section>
 
-  <section class="card wide note">
-    <b>Echt:</b> die Firmware-Klasse aus <code>examples/*/firmware/main.cpp</code> (unverändert), der MeshCore-Kern mit Verschlüsselung, Anmeldung, Alerts, ACK und Wiederholungen, die Pin-Belegung des gewählten Boards.
-    <b>Simuliert:</b> das Funkmedium (LoRa-Sendezeit nach Formel, Verlust, Kollisionen), das Handy (nach dem Verhalten von <code>BaseChatMesh</code>, nicht die echte App), der Repeater und die Sensoren.
-    <b>Nicht geprüft:</b> Verdrahtung, Pegel, Reichweite, Stromverbrauch. Dafür braucht es die echte Hardware.
-    <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/sim/README.md">Mehr zur Simulation</a>
+  <section class="card run">
+    <h2>Was läuft hier genau, und wie nutze ich es?</h2>
+    <div class="cols">
+      <div>
+        <h3>Was dein Browser gerade geladen hat</h3>
+        <ul>
+          <li>Datei: <code id="runfile">…</code> (<span id="runsize">…</span>). Das ist ein WebAssembly-Programm, in dem Beispielcode und MeshCore-Kern zusammengebaut sind. <b>Kein Firmware-Binary</b> (.bin/.uf2): Es lässt sich nicht auf ein Board flashen.</li>
+          <li>Quellen: <a id="runsrc" href="#">main.cpp</a> des Beispiels, MeshCore <code id="runmc">?</code>, übersetzt mit <code id="runem">?</code>.</li>
+          <li>Es läuft komplett in deinem Browser. Nichts wird an einen Server gesendet.</li>
+          <li>Für jedes Beispiel und Board gibt es einen eigenen Build mit den Pin-Einstellungen dieses Boards, ausgewählt über Beispiel und Board oben.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>So nutzt du es</h3>
+        <ol>
+          <li><b>Online:</b> Beispiel und Board wählen, „Am Sensor anmelden“ klicken, dann den Aufbau bedienen. Die Tipps stehen oben unter „Zeit“.</li>
+          <li><b>Lokal ohne Internet:</b> <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/releases/download/simulator-v0.1.0/carinthiamesh-simulator.zip">carinthiamesh-simulator.zip</a> laden, entpacken, <code>index.html</code> im Browser öffnen. Es braucht keine Installation.</li>
+          <li><b>Selbst bauen</b> (wenn du die Beispiele änderst): Anleitung in <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/sim/README.md#im-browser-webassembly">sim/README.md</a>. Die gleiche Logik läuft dort auch als Test auf dem PC (<code>make -C sim test</code>).</li>
+          <li><b>Danach auf echte Hardware:</b> Aufbau, Flashen und Test stehen im <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes#getting-started-schritt-für-schritt">Getting Started</a>. Gebaut wird dort mit PlatformIO, nicht mit dieser Seite.</li>
+        </ol>
+      </div>
+    </div>
   </section>
+
+  <section class="card wide note">Genaue Grenzen und was getestet ist: <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/sim/README.md">sim/README.md</a>. Die Beispiele sind bisher nur kompiliert und simuliert, nicht auf Hardware getestet.</section>
 </main>
 
+<script id="pins" type="application/json">null</script>
 <script>
 const $ = id => document.getElementById(id);
 let BOARDS = {};
@@ -152,8 +190,9 @@ function loadScript(src){return new Promise((res,rej)=>{const s=document.createE
 
 async function start(){
   const my = ++gen; M = null;
-  if (!Object.keys(BOARDS).length) BOARDS = await (await fetch('pins.json')).json();
+  if (!Object.keys(BOARDS).length) BOARDS = JSON.parse($('pins').textContent) || await (await fetch('pins.json')).json();
   const ex = $('ex').value, bd = $('board').value, B = BOARDS[bd];
+  $('srclink').href = `https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/examples/${ex}/firmware/main.cpp`;
   B.lab = n => B.labels[n] || (B.prefix + n);
   pins = {door:B.door, leak:B.leak, btn:B.btn, led:B.led, buz:B.buz, wet:B.wet};
   $('msgs').innerHTML=''; $('log').innerHTML=''; sent=0; lost=0; acc=0; touched=0;
@@ -163,6 +202,7 @@ async function start(){
     try { await loadScript(`wasm/${ex}-${bd}.js`); } catch(e){ $('phonestat').textContent=e.message; return; }
     window.__simKey = ex+bd;
   }
+  describeRun(ex, bd);
   M = await window.createSim();
   if (my !== gen) return;
   for (const n of ['sim_start:null:number,number','sim_run:null:number','sim_login:null:','sim_command:null:string','sim_auto_ack:null:number','sim_pin_set:null:number,number','sim_pin_release:null:number','sim_pin_out:number:number','sim_env:null:number,number,number,number','sim_battery:null:number','sim_now:number:'])
@@ -176,6 +216,14 @@ async function start(){
   applyInputs(ex);
   drawMesh(); poll();
   $('cmd').placeholder = ex==='button-sensor' ? 'z. B. led on, led off, beep' : 'z. B. status';
+}
+
+let BUILD = null;
+async function describeRun(ex, bd){
+  const f = `wasm/${ex}-${bd}.js`;
+  $('runfile').textContent = f; $('runsrc').href = $('srclink').href; $('runsrc').textContent = `examples/${ex}/firmware/main.cpp`;
+  try { const r = await fetch(f); $('runsize').textContent = Math.round((await r.blob()).size/1024)+' KB'; } catch(e){ $('runsize').textContent = 'Größe unbekannt'; }
+  try { BUILD = BUILD || await (await fetch('build-info.json')).json(); $('runmc').textContent = BUILD.meshcore; $('runem').textContent = BUILD.emscripten; } catch(e){ $('runmc').textContent = '81dbae5'; $('runem').textContent = 'Emscripten'; }
 }
 
 /* ---------- Aufbau (SVG) ---------- */
