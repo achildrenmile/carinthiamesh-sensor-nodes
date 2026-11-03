@@ -52,6 +52,8 @@ Jeder Testfall läuft in einem eigenen Prozess, damit die globalen Zustände sau
 
 ## Im Browser (WebAssembly)
 
+Online: https://achildrenmile.github.io/carinthiamesh-sensor-nodes/ (wird bei jedem Merge auf `main` neu gebaut).
+
 Dieselbe Simulation läuft als Webseite: virtueller Aufbau (Taster, Reed-Kontakt, Wassersensor, BME280-Regler, LED, Buzzer), simuliertes Handy mit Anmeldung, Alerts und Befehlen, Mesh-Bild mit Funkprotokoll und Zeitraffer. Beispiel und Board (Heltec V3, RAK4631, XIAO nRF52840) sind wählbar, optional mit Repeater und Paketverlust. Pro Beispiel und Board entsteht ein eigener Build mit denselben Pin-Flags wie in `scripts/build_examples.sh` (gemeinsam in `scripts/pin_flags.sh`), die Pin-Beschriftung stammt aus `web/pins.json`.
 
 ```bash
