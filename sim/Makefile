@@ -61,6 +61,8 @@ WEB_LINK   := -sMODULARIZE=1 -sEXPORT_NAME=createSim -sSINGLE_FILE=1 -sALLOW_MEM
 .PHONY: web
 web: $(foreach e,$(EXAMPLES),$(foreach b,$(WEB_BOARDS),$(WEB_OUT)/$(e)-$(b).js))
 	cp web/pins.json $(BUILD)/site/
+	@mkdir -p $(BUILD)/site/code
+	@for e in $(EXAMPLES); do python3 web/gen_code.py $$e $(BUILD)/$$e/app.h ../examples/$$e/firmware/main.cpp ../scripts/pin_flags.sh $(BUILD)/site/code/$$e.js; done
 	python3 -c "import json,sys;h=open('web/index.html').read();p=json.dumps(json.load(open('web/pins.json')));open('$(BUILD)/site/index.html','w').write(h.replace('<script id=\"pins\" type=\"application/json\">null</script>','<script id=\"pins\" type=\"application/json\">'+p+'</script>'))"
 	printf '{"meshcore":"%s","emscripten":"%s"}\n' "$$(git -C $(MESHCORE) rev-parse --short HEAD)" "$$($(CXX) --version | head -1 | sed 's/.*) //;s/ (.*//')" > $(BUILD)/site/build-info.json
 define WEBRULE
