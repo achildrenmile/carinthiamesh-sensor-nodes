@@ -204,6 +204,7 @@ a{color:var(--acc)}
       <dt>Alert kommt doppelt</dt><dd>Bei hoch priorisierten Alerts bekannt: Die erste Meldung kann doppelt ankommen (siehe <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/sim/README.md#befunde">sim/README.md</a>).</dd>
       <dt>Klimasensor meldet nichts</dt><dd>„BME280 angeschlossen“ aktivieren. Ohne Sensor gibt es keine Messwerte.</dd>
       <dt>Die Seite bleibt leer</dt><dd>Der Browser braucht WebAssembly (alle aktuellen Browser). Bei lokaler Nutzung die Datei <code>index.html</code> aus dem entpackten ZIP öffnen, nicht aus dem ZIP selbst.</dd>
+      <dt>Ich will den Code ändern</dt><dd>Direkt auf dieser Seite geht das nicht, weil dafür ein Compiler nötig ist. Mit <code>scripts/sim-dev.sh</code> (lokal oder in Codespaces) bearbeitest du <code>main.cpp</code> und siehst die Änderung nach etwa 15 Sekunden im Simulator. Siehe „So nutzt du es“ weiter unten.</dd>
       <dt>Funktioniert das auch in echt?</dt><dd>Das zeigt nur ein Test mit Hardware. Hier ist die Programmlogik geprüft, nicht Verdrahtung, Treiber und Funk (siehe Kasten ganz oben).</dd>
     </dl>
   </details>
@@ -225,7 +226,7 @@ a{color:var(--acc)}
         <ol>
           <li><b>Online:</b> Beispiel und Board wählen, „Am Sensor anmelden“ klicken, dann den Aufbau bedienen. Die Tipps stehen oben unter „Zeit“.</li>
           <li><b>Lokal ohne Internet:</b> <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/releases/download/simulator-v0.2.0/carinthiamesh-simulator.zip">carinthiamesh-simulator.zip</a> laden, entpacken, <code>index.html</code> im Browser öffnen. Es braucht keine Installation.</li>
-          <li><b>Selbst bauen</b> (wenn du die Beispiele änderst): Anleitung in <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/sim/README.md#im-browser-webassembly">sim/README.md</a>. Die gleiche Logik läuft dort auch als Test auf dem PC (<code>make -C sim test</code>).</li>
+          <li><b>Code ändern und neu bauen:</b> Das Repository in <a href="https://codespaces.new/achildrenmile/carinthiamesh-sensor-nodes">GitHub Codespaces</a> öffnen (läuft im Browser) oder lokal klonen, dann <code>scripts/sim-dev.sh door-sensor</code> starten. Danach <code>examples/door-sensor/firmware/main.cpp</code> bearbeiten und speichern: Der Simulator baut in rund 15 Sekunden neu und die Seite (<code>?dev=1</code>) lädt von selbst nach. Details in <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes/blob/main/sim/README.md#beispiel-ändern-und-neu-bauen">sim/README.md</a>.</li>
           <li><b>Danach auf echte Hardware:</b> Aufbau, Flashen und Test stehen im <a href="https://github.com/achildrenmile/carinthiamesh-sensor-nodes#getting-started-schritt-für-schritt">Getting Started</a>. Gebaut wird dort mit PlatformIO, nicht mit dieser Seite.</li>
         </ol>
       </div>
@@ -464,6 +465,10 @@ $('cmdform').onsubmit=ev=>{ev.preventDefault(); const c=$('cmd').value.trim(); i
 document.querySelectorAll('[data-skip]').forEach(b=>b.onclick=()=>{ if(M){ const total=+b.dataset.skip; for(let d=0; d<total; d+=5000){ fn.sim_run(Math.min(5000,total-d)); poll(); } } });
 const q = new URLSearchParams(location.search);
 if (q.get('ex')) $('ex').value=q.get('ex'); if (q.get('board')) $('board').value=q.get('board');
+if (q.get('dev')) {   // Entwicklungsmodus (scripts/sim-dev.sh): bei neuem Build Seite neu laden
+  let built = null;
+  setInterval(async()=>{ try { const b=(await (await fetch('build-info.json',{cache:'no-store'})).json()).built; if(built&&b!==built) location.reload(); built=b; } catch(e){} }, 2000);
+}
 start(); requestAnimationFrame(frame);
 </script>
 </body>

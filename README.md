@@ -94,7 +94,7 @@ Alle drei wurden **nur kompiliert**, nicht an echter Hardware getestet.
 
 Bevor ihr etwas aufbaut: Die echte Firmware-Logik jedes Beispiels läuft im Ordner [`sim/`](sim/) auf dem PC, mit simuliertem Funk, Companion, Repeater, Tastern und Sensorwerten. Das prüft Entprellen, Cooldown, Stundenbudget, Alerts und Wiederholungen. Es beweist nicht, dass Verdrahtung und Funk in echt stimmen. Details, Grenzen und zwei Befunde stehen in [`sim/README.md`](sim/README.md).
 
-**Im Browser:** [Simulator öffnen](https://achildrenmile.github.io/carinthiamesh-sensor-nodes/). Die gleiche Simulation gibt es als Webseite mit virtuellem Aufbau (Taster klicken, Tür öffnen, Wasser anlegen, Temperatur verstellen), simuliertem Handy und Funkprotokoll, wahlweise für Heltec V3, RAK4631 und XIAO nRF52840. Selbst bauen: siehe [`sim/README.md`](sim/README.md#im-browser-webassembly).
+**Im Browser:** [Simulator öffnen](https://achildrenmile.github.io/carinthiamesh-sensor-nodes/). Die gleiche Simulation gibt es als Webseite mit virtuellem Aufbau (Taster klicken, Tür öffnen, Wasser anlegen, Temperatur verstellen), simuliertem Handy und Funkprotokoll, wahlweise für Heltec V3, RAK4631 und XIAO nRF52840. Selbst bauen oder ein Beispiel ändern und neu simulieren: siehe [`sim/README.md`](sim/README.md#beispiel-ändern-und-neu-bauen).
 
 ![Der Simulator im Browser: Türsensor, nach dem Öffnen der Tür kommt der Alert im simulierten Handy an. Alles simuliert, keine echte Hardware.](docs/simulator.png)
 

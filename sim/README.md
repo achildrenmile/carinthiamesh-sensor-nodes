@@ -72,6 +72,21 @@ Die Schnittstelle zwischen Seite und Simulation steht in `web/web_api.cpp`. Die 
 
 Grenzen wie oben: Das ist dieselbe Logik-Simulation, nur mit Oberfläche. Die Pins sind logische Pins der Firmware, elektrische Eigenschaften (Pegel, Prellen des echten Kontakts, Funkreichweite) bildet sie nicht ab.
 
+## Beispiel ändern und neu bauen
+
+Der Simulator baut dein geändertes Beispiel selbst neu, ohne dass du Emscripten oder MeshCore von Hand einrichten musst:
+
+```bash
+git clone https://github.com/achildrenmile/carinthiamesh-sensor-nodes && cd carinthiamesh-sensor-nodes
+scripts/sim-dev.sh door-sensor        # richtet MeshCore, Bibliotheken und Emscripten ein (einmalig), baut und startet http://localhost:8000/?dev=1
+```
+
+Dann `examples/door-sensor/firmware/main.cpp` bearbeiten und speichern. Das Skript erkennt die Änderung, baut das Beispiel für alle drei Boards neu (rund 15 Sekunden) und die Seite lädt nach. Bei Compilerfehlern zeigt das Terminal sie, die Seite behält den letzten funktionierenden Stand. Weitere Optionen: `--setup` (nur einrichten), `--once` (einmal bauen), Beispiele durch Leerzeichen getrennt.
+
+Ohne eigene Installation: das Repository in GitHub Codespaces öffnen (`.devcontainer/` richtet alles ein, der Simulator erscheint als weitergeleiteter Port 8000). Die erste Einrichtung dauert einige Minuten (Emscripten), die Codespaces-Konfiguration ist noch nicht in einem echten Codespace ausprobiert.
+
+Die geänderte Datei ist dieselbe, die du später mit PlatformIO auf das Board bringst. Direkt im Browser kompilieren geht nicht, dafür fehlt dort ein Compiler.
+
 ## Befunde
 
 Beim Aufbau der Simulation sind zwei Dinge in MeshCore (Stand 81dbae5) aufgefallen. Beide sind bisher nur in der Simulation gesehen, nicht auf Hardware.

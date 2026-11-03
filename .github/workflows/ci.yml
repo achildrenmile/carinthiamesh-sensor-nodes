@@ -84,6 +84,13 @@ jobs:
         run: node sim/web/test_web.cjs sim/build-web/site
       - name: Seite im Browser bedienen (anmelden, Tuer oeffnen, Alert pruefen)
         run: CHROME=google-chrome node sim/web/test_ui.mjs sim/build-web/site
+      - name: Beispiel aendern und neu bauen (scripts/sim-dev.sh --once)
+        run: |
+          source ../emsdk/emsdk_env.sh
+          sed -i 's/Tuer offen/Tuer AUF/' examples/door-sensor/firmware/main.cpp
+          MESHCORE="$PWD/../MeshCore" scripts/sim-dev.sh --once door-sensor
+          ONLY=door-sensor WANT="Tuer AUF" node sim/web/test_web.cjs sim/build-dev/site
+          git checkout examples/door-sensor/firmware/main.cpp
       - uses: actions/upload-pages-artifact@v3
         with:
           path: sim/build-web/site

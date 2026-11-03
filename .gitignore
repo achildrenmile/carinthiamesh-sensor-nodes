@@ -3,3 +3,4 @@
 *.bin
 sim/build/
 sim/build-web/
+sim/build-dev/
