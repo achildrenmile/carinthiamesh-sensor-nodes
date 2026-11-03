@@ -11,8 +11,8 @@ Ein Reed-Kontakt an einem Heltec V3 meldet, wenn eine Tür, ein Fenster oder ein
 | Meldet | „Tuer offen“ / „Tuer geschlossen“ als Low-Priority-Alert per DM |
 | Steuerbar | `status` in der Admin-Konsole fragt den Zustand ab |
 | Airtime-Schutz | Entprellen 200 ms, 1 Meldung pro Minute, max. 20 pro Stunde |
-| Getestet gegen | nicht kompiliert; gebaut auf MeshCore `main` 81dbae5 (v1.18.0) |
-| Status | nicht auf Hardware getestet |
+| Getestet gegen | MeshCore `main` 81dbae5 (v1.18.0), `pio run -e Heltec_v3_sensor` erfolgreich (3. Nov. 2026) |
+| Status | kompiliert, nicht auf Hardware getestet |
 
 ## Dateien
 

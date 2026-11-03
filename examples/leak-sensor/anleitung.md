@@ -28,4 +28,4 @@ pio run -e Heltec_v3_sensor -t upload
 
 ## 5. Hinweis
 
-Ein Funk-Wassermelder ersetzt keinen Überflutungsschutz mit Absperrventil. Nicht auf Hardware getestet.
+Ein Funk-Wassermelder ersetzt keinen Überflutungsschutz mit Absperrventil. Kompiliert, aber nicht auf Hardware getestet.

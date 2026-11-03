@@ -12,7 +12,7 @@ Vier Taster, eine LED und ein Buzzer an einem Heltec V3. Ein Tastendruck schickt
 | Steuerbar | `led on`, `led off`, `beep` über die Admin-Konsole |
 | Airtime-Schutz | 1 Meldung pro Taster alle 30 s, max. 20 pro Stunde |
 | Getestet gegen | MeshCore `main` 81dbae5 (v1.18.0) |
-| Status | nicht auf Hardware getestet |
+| Status | kompiliert, nicht auf Hardware getestet |
 
 ## Dateien
 

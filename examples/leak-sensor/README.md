@@ -11,8 +11,8 @@ Ein Wassermelder für Keller, Waschmaschine oder Heizungsraum. Ein Feuchtesensor
 | Meldet | „Wasser erkannt!“ als High-Priority-Alert per DM |
 | Steuerbar | `status` in der Admin-Konsole: „nass“ oder „trocken“ |
 | Airtime-Schutz | Wasser muss 2 s anliegen, nach einer Meldung 10 min Ruhe, max. 6 pro Stunde |
-| Getestet gegen | nicht kompiliert; gebaut auf MeshCore `main` 81dbae5 (v1.18.0) |
-| Status | nicht auf Hardware getestet |
+| Getestet gegen | MeshCore `main` 81dbae5 (v1.18.0), `pio run -e Heltec_v3_sensor` erfolgreich (3. Nov. 2026) |
+| Status | kompiliert, nicht auf Hardware getestet |
 
 ## Dateien
 

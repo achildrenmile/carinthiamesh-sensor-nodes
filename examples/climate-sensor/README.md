@@ -11,8 +11,8 @@ Ein BME280 am Heltec V3 misst Temperatur, Luftfeuchte und Luftdruck. Die Werte h
 | Meldet | „Frostgefahr“ (unter 2 °C, zurück über 4 °C), „Luftfeuchte hoch“ (über 70 %, zurück unter 65 %) |
 | Abfragbar | Telemetrie: Akku, Temperatur, Luftfeuchte, Luftdruck, Höhe; Min/Max/Mittel der letzten 24 h |
 | Airtime-Schutz | Messwerte nur auf Abfrage; Alerts mit Hysterese, nur bei Zustandswechsel |
-| Getestet gegen | nicht kompiliert; gebaut auf MeshCore `main` 81dbae5 (v1.18.0) |
-| Status | nicht auf Hardware getestet |
+| Getestet gegen | MeshCore `main` 81dbae5 (v1.18.0), `pio run -e Heltec_v3_sensor` erfolgreich (3. Nov. 2026) |
+| Status | kompiliert, nicht auf Hardware getestet |
 
 ## Dateien
 
