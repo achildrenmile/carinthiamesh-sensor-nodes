@@ -3,7 +3,8 @@
 const path = require('path'), fs = require('fs');
 const dir = path.resolve(process.argv[2] || '../build-web/site');
 const PINS = JSON.parse(fs.readFileSync(path.join(__dirname, 'pins.json')));
-const EX = ['door-sensor', 'leak-sensor', 'climate-sensor', 'button-sensor'];
+const ALL = ['door-sensor', 'leak-sensor', 'climate-sensor', 'button-sensor'];
+const EX = process.env.ONLY ? [process.env.ONLY] : ALL;   // ONLY=<beispiel>, WANT=<erwartete Meldung> fuer geaenderte Beispiele
 
 async function open(ex, bd) {
   const m = await require(path.join(dir, 'wasm', `${ex}-${bd}.js`))();
@@ -31,7 +32,7 @@ async function scenario(ex, bd) {
     s.pinSet(P.btn[1], 0); s.run(100); ledSeen = s.pinOut(P.led) === 1; s.run(30000);
   }
   take();
-  const want = { 'door-sensor': 'Tuer offen', 'leak-sensor': 'Wasser erkannt!', 'climate-sensor': 'Frostgefahr', 'button-sensor': 'Taster 2 gedrueckt' }[ex];
+  const want = process.env.WANT || { 'door-sensor': 'Tuer offen', 'leak-sensor': 'Wasser erkannt!', 'climate-sensor': 'Frostgefahr', 'button-sensor': 'Taster 2 gedrueckt' }[ex];
   const ok = msgs.includes(want) && (ex !== 'button-sensor' || ledSeen);
   console.log(`${ok ? 'OK    ' : 'FEHLER'} ${ex} auf ${bd}: ${JSON.stringify(msgs)}${ex === 'button-sensor' ? ' LED=' + ledSeen : ''}`);
   return ok;
@@ -39,6 +40,6 @@ async function scenario(ex, bd) {
 (async () => {
   let bad = 0;
   for (const bd of Object.keys(PINS)) for (const ex of EX) if (!(await scenario(ex, bd))) bad++;
-  console.log(bad ? `${bad} Kombination(en) fehlgeschlagen` : '12 von 12 Kombinationen bestanden');
+  console.log(bad ? `${bad} Kombination(en) fehlgeschlagen` : `${EX.length * Object.keys(PINS).length} von ${EX.length * Object.keys(PINS).length} Kombinationen bestanden`);
   process.exit(bad ? 1 : 0);
 })();
