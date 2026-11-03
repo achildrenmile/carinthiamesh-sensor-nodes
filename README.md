@@ -9,6 +9,11 @@ Beispiele für Sensor- und Aktor-Nodes im [MeshCore](https://github.com/meshcore
 | Beispiel | Hardware | Was es macht | Status |
 | --- | --- | --- | --- |
 | [button-sensor](examples/button-sensor/) | Heltec V3, 4 Taster, LED, Buzzer | Tastendruck als DM-Alert, LED und Buzzer per Admin-Befehl schaltbar | nicht auf Hardware getestet |
+| [door-sensor](examples/door-sensor/) | Heltec V3, Reed-Kontakt | Tür oder Fenster auf/zu als DM-Alert | nicht kompiliert, nicht getestet |
+| [leak-sensor](examples/leak-sensor/) | Heltec V3, Wassersensor-Modul | Wasser erkannt als High-Priority-Alert bis zum ACK | nicht kompiliert, nicht getestet |
+| [climate-sensor](examples/climate-sensor/) | Heltec V3, BME280 | Temperatur, Feuchte, Druck per Telemetrie, Alerts bei Frost und hoher Feuchte | nicht kompiliert, nicht getestet |
+
+Jedes Beispiel hat eine eigene Stückliste (`BOM.md`). Verwandte Projekte aus der Community stehen in [COMMUNITY.md](COMMUNITY.md).
 
 Weitere Beispiele sind willkommen, siehe [Mitmachen](#mitmachen).
 
@@ -41,6 +46,7 @@ Ein neues Beispiel bekommt einen eigenen Ordner unter `examples/<name>/` mit:
 
 | Datei | Inhalt |
 | --- | --- |
+| `BOM.md` | Stückliste |
 | `README.md` | Steckbrief: Hardware, Build-Target, was gemeldet wird, Airtime-Schutz, getesteter MeshCore-Stand, Status |
 | `anleitung.md` | Verdrahtung, Aufbau, Build, Test |
 | `schaltplan.svg` | Schaltplan |
