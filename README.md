@@ -96,6 +96,8 @@ Bevor ihr etwas aufbaut: Die echte Firmware-Logik jedes Beispiels läuft im Ordn
 
 **Im Browser:** [Simulator öffnen](https://achildrenmile.github.io/carinthiamesh-sensor-nodes/). Die gleiche Simulation gibt es als Webseite mit virtuellem Aufbau (Taster klicken, Tür öffnen, Wasser anlegen, Temperatur verstellen), simuliertem Handy und Funkprotokoll, wahlweise für Heltec V3, RAK4631 und XIAO nRF52840. Selbst bauen: siehe [`sim/README.md`](sim/README.md#im-browser-webassembly).
 
+![Der Simulator im Browser: Türsensor, nach dem Öffnen der Tür kommt der Alert im simulierten Handy an. Alles simuliert, keine echte Hardware.](docs/simulator.png)
+
 ## Wie Sensor-Nodes bei MeshCore funktionieren
 
 Alle Beispiele bauen auf der offiziellen Vorlage [`examples/simple_sensor`](https://github.com/meshcore-dev/MeshCore/tree/main/examples/simple_sensor) auf. Eine Einführung gibt der [MeshCore-Blog: Sensor Node Intro](https://blog.meshcore.io/2026/09/14/sensor-intro).

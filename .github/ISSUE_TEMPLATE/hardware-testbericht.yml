@@ -1,0 +1,48 @@
+name: Hardware-Testbericht
+description: Du hast ein Beispiel aufgebaut. Hat es funktioniert?
+title: "Testbericht: <Beispiel> auf <Board>"
+labels: ["testbericht"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke fürs Ausprobieren! Die Beispiele sind bisher nur kompiliert und simuliert, nicht auf Hardware getestet. Dein Bericht hilft, das zu ändern. Auch "hat nicht funktioniert" ist wertvoll.
+  - type: dropdown
+    id: example
+    attributes:
+      label: Beispiel
+      options: [door-sensor, leak-sensor, climate-sensor, button-sensor, anderes]
+    validations: {required: true}
+  - type: dropdown
+    id: board
+    attributes:
+      label: Board
+      options: [Heltec WiFi LoRa 32 V3, RAK4631 (WisBlock), Seeed XIAO nRF52840, anderes]
+    validations: {required: true}
+  - type: dropdown
+    id: result
+    attributes:
+      label: Ergebnis
+      options: [Funktioniert wie beschrieben, Funktioniert teilweise, Funktioniert nicht]
+    validations: {required: true}
+  - type: textarea
+    id: what
+    attributes:
+      label: Was hast du gemacht und was ist passiert?
+      description: Aufbau, ob die Anmeldung in der App geklappt hat, ob Alerts angekommen sind, Reichweite.
+    validations: {required: true}
+  - type: textarea
+    id: diff
+    attributes:
+      label: Abweichungen von der Anleitung
+      description: Andere Pins, andere Bauteile, geänderte Schwellwerte, Fehler in der Anleitung.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Release des Beispiels (z. B. door-sensor-v0.3.0) und MeshCore-Version.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Ausgabe oder Fotos (optional)
+      description: Serielle Ausgabe, Fehlermeldungen vom Build, Foto vom Aufbau.
