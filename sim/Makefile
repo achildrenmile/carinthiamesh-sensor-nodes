@@ -60,7 +60,9 @@ WEB_LINK   := -sMODULARIZE=1 -sEXPORT_NAME=createSim -sSINGLE_FILE=1 -sALLOW_MEM
               -sEXPORTED_FUNCTIONS=_malloc,_free -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,UTF8ToString
 .PHONY: web
 web: $(foreach e,$(EXAMPLES),$(foreach b,$(WEB_BOARDS),$(WEB_OUT)/$(e)-$(b).js))
-	cp web/index.html web/pins.json $(BUILD)/site/
+	cp web/pins.json $(BUILD)/site/
+	python3 -c "import json,sys;h=open('web/index.html').read();p=json.dumps(json.load(open('web/pins.json')));open('$(BUILD)/site/index.html','w').write(h.replace('<script id=\"pins\" type=\"application/json\">null</script>','<script id=\"pins\" type=\"application/json\">'+p+'</script>'))"
+	printf '{"meshcore":"%s","emscripten":"%s"}\n' "$$(git -C $(MESHCORE) rev-parse --short HEAD)" "$$($(CXX) --version | head -1 | sed 's/.*) //;s/ (.*//')" > $(BUILD)/site/build-info.json
 define WEBRULE
 $$(WEB_OUT)/$(1)-$(2).js: $$(BUILD)/$(1)/app.h $$(LIBOBJ) $$(ED_OBJ) web/web_api.cpp web/boards.h $$(wildcard src/*.h)
 	@mkdir -p $$(WEB_OUT)

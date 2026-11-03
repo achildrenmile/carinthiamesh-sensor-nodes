@@ -54,6 +54,10 @@ Jeder Testfall läuft in einem eigenen Prozess, damit die globalen Zustände sau
 
 Online: https://achildrenmile.github.io/carinthiamesh-sensor-nodes/ (wird bei jedem Merge auf `main` neu gebaut).
 
+**Lokal ohne Installation:** `carinthiamesh-simulator.zip` aus dem Release `simulator-v0.1.0` laden, entpacken und `index.html` im Browser öffnen. Das geht auch offline.
+
+**Was geladen wird:** pro Beispiel und Board eine Datei `wasm/<beispiel>-<board>.js` (rund 400 KB, WebAssembly eingebettet). Sie enthält den übersetzten Beispielcode und den MeshCore-Kern. Es ist **kein** Firmware-Binary (`.bin`/`.uf2`) und lässt sich nicht flashen; die echte Firmware baut man wie im Getting Started mit PlatformIO. `build-info.json` nennt MeshCore-Stand und Emscripten-Version.
+
 Dieselbe Simulation läuft als Webseite: virtueller Aufbau (Taster, Reed-Kontakt, Wassersensor, BME280-Regler, LED, Buzzer), simuliertes Handy mit Anmeldung, Alerts und Befehlen, Mesh-Bild mit Funkprotokoll und Zeitraffer. Beispiel und Board (Heltec V3, RAK4631, XIAO nRF52840) sind wählbar, optional mit Repeater und Paketverlust. Pro Beispiel und Board entsteht ein eigener Build mit denselben Pin-Flags wie in `scripts/build_examples.sh` (gemeinsam in `scripts/pin_flags.sh`), die Pin-Beschriftung stammt aus `web/pins.json`.
 
 ```bash
