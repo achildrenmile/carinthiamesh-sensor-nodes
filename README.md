@@ -90,6 +90,10 @@ Die Beispiele sind für den Heltec V3 voreingestellt, laufen aber auch auf ander
 
 Alle drei wurden **nur kompiliert**, nicht an echter Hardware getestet.
 
+## Erst am PC ausprobieren (Simulation)
+
+Bevor ihr etwas aufbaut: Die echte Firmware-Logik jedes Beispiels läuft im Ordner [`sim/`](sim/) auf dem PC, mit simuliertem Funk, Companion, Repeater, Tastern und Sensorwerten. Das prüft Entprellen, Cooldown, Stundenbudget, Alerts und Wiederholungen. Es beweist nicht, dass Verdrahtung und Funk in echt stimmen. Details, Grenzen und zwei Befunde stehen in [`sim/README.md`](sim/README.md).
+
 ## Wie Sensor-Nodes bei MeshCore funktionieren
 
 Alle Beispiele bauen auf der offiziellen Vorlage [`examples/simple_sensor`](https://github.com/meshcore-dev/MeshCore/tree/main/examples/simple_sensor) auf. Eine Einführung gibt der [MeshCore-Blog: Sensor Node Intro](https://blog.meshcore.io/2026/09/14/sensor-intro).

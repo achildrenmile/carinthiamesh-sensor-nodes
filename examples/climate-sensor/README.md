@@ -14,6 +14,8 @@ Ein BME280 am Heltec V3 misst Temperatur, Luftfeuchte und Luftdruck. Die Werte h
 | Getestet gegen | MeshCore `main` 81dbae5 (v1.18.0), `pio run -e Heltec_v3_sensor` erfolgreich (3. Nov. 2026) |
 | Status | kompiliert, nicht auf Hardware getestet |
 
+> **Hinweis:** `SensorMesh::getRelativeHumidity()` liest die Luftfeuchte in MeshCore 81dbae5 falsch (1 Byte in CayenneLPP, 2 Byte im Decoder). `main.cpp` nutzt deshalb einen eigenen Leser. Siehe [`sim/README.md`](../../sim/README.md#befunde).
+
 ## Dateien
 
 | Datei | Inhalt |

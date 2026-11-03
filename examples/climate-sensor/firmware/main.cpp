@@ -1,4 +1,5 @@
 #include "SensorMesh.h"
+#include <helpers/sensors/LPPDataHelpers.h>
 
 #ifdef DISPLAY_CLASS
   #include "UITask.h"
@@ -11,6 +12,26 @@
 #define FROST_OFF_C     4.0f       // zuruecksetzen erst ueber 4 °C (Hysterese)
 #define HUMID_ON_PCT    70.0f      // Schimmel-Alert ueber 70 % rF
 #define HUMID_OFF_PCT   65.0f
+
+// SensorMesh::getRelativeHumidity() liest die Luftfeuchte falsch: CayenneLPP schreibt sie mit 1 Byte
+// (0,5 %), LPPData::getDataSize() rechnet mit 2 Byte. Der Wert ist Unsinn und alle Eintraege dahinter
+// (Luftdruck) verrutschen. Deshalb hier ein eigener Leser mit der echten Feldgroesse.
+static bool readEnv(CayenneLPP& lpp, uint8_t channel, float& temp, float& rh) {
+  const uint8_t* b = lpp.getBuffer();
+  uint8_t n = lpp.getSize(), i = 0;
+  bool got_t = false, got_rh = false;
+  while (i + 2 < n) {
+    uint8_t ch = b[i++], t = b[i++];
+    uint8_t sz = (t == LPP_RELATIVE_HUMIDITY) ? 1 : LPPData::getDataSize(t);
+    if (ch == channel && t == LPP_TEMPERATURE) {
+      temp = LPPData::getFloat(&b[i], sz, LPPData::getMultiplier(t), LPPData::isSigned(t)); got_t = true;
+    } else if (ch == channel && t == LPP_RELATIVE_HUMIDITY) {
+      rh = b[i] / 2.0f; got_rh = true;
+    }
+    i += sz;
+  }
+  return got_t && got_rh;
+}
 
 class MyMesh : public SensorMesh {
 public:
@@ -36,9 +57,10 @@ protected:
     alertIf(has_batt && batt_voltage < 3.4f, critical_batt, HIGH_PRI_ALERT, "Battery is critical!");
     alertIf(has_batt && batt_voltage < 3.6f, low_batt, LOW_PRI_ALERT, "Battery is low");
 
-    float rh = getRelativeHumidity(ENV_CHANNEL);
-    if (rh <= 0.0f) return;                 // kein BME280 gefunden: nichts auswerten
-    float t = getTemperature(ENV_CHANNEL);
+    CayenneLPP env(MAX_PACKET_PAYLOAD - 4);
+    sensors.querySensors(TELEM_PERM_ENVIRONMENT, env);
+    float t, rh;
+    if (!readEnv(env, ENV_CHANNEL, t, rh)) return;   // kein BME280 gefunden: nichts auswerten
 
     temp_data.recordData(getRTCClock(), t);
     hum_data.recordData(getRTCClock(), rh);
